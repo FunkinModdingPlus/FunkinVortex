@@ -10,6 +10,7 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
 import flixel.input.mouse.FlxMouseEventManager;
 import flixel.math.FlxMath;
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
@@ -50,6 +51,7 @@ class PlayState extends FlxState
 	var openButton:FlxButton;
 	var saveButton:FlxButton;
 	var loadVocalsButton:FlxButton;
+	var loadInstButton:FlxButton;
 
 	var curSelectedNote:Array<Dynamic>;
 	var GRID_SIZE = 40;
@@ -66,10 +68,11 @@ class PlayState extends FlxState
 	var noteHold:Array<Bool> = [false, false, false, false, false, false, false, false];
 	var curSectionTxt:FlxText;
 	var sectionInfo:SectionInfo;
-
+	var noteInfo:NoteInfo;
 	var toolInfo:FlxText;
 	var musicSound:Sound;
 	var vocals:Sound;
+	var vocalSound:FlxSound;
 	var snapInfo:Snaps = Four;
 
 	override public function create()
@@ -116,7 +119,7 @@ class PlayState extends FlxState
 			};
 			var data = Json.stringify(json);
 			if ((data != null) && (data.length > 0))
-				FNFAssets.askToSave("song", Json.stringify(_song));
+				FNFAssets.askToSave("song", data);
 		});
 		loadVocalsButton = new FlxButton(10, 70, "Load vocals", function()
 		{
@@ -124,7 +127,16 @@ class PlayState extends FlxState
 			future.onComplete(function(s:String)
 			{
 				vocals = Sound.fromFile(s);
-				FlxG.sound.playMusic(vocals);
+				vocalSound = FlxG.sound.load(vocals);
+			});
+		});
+		loadInstButton = new FlxButton(10, 100, "Load inst", function()
+		{
+			var future = FNFAssets.askToBrowseForPath("ogg");
+			future.onComplete(function(s:String)
+			{
+				musicSound = Sound.fromFile(s);
+				FlxG.sound.playMusic(musicSound);
 				FlxG.sound.music.pause();
 			});
 		});
@@ -143,14 +155,57 @@ class PlayState extends FlxState
 		curSectionTxt.scrollFactor.set();
 		sectionInfo = new SectionInfo(FlxG.width - 500, 0, _song, 0);
 		sectionInfo.scrollFactor.set();
+		noteInfo = new NoteInfo(FlxG.width - 500, 0);
+		noteInfo.scrollFactor.set();
 		toolInfo = new FlxText(FlxG.width / 2, FlxG.height, 0, "a", 16);
+		noteInfo.visible = false;
 		// don't immediately set text to '' because height??
 		toolInfo.y -= toolInfo.height;
 		toolInfo.text = 'hover over things to see what they do';
 		// NOT PIXEL PERFECT
-		FlxMouseEventManager.add(sectionInfo.mustHitTxt, null, null, function(s:FlxText)
+		FlxMouseEventManager.add(sectionInfo.mustHitTxt, function(s:FlxText)
+		{
+			_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection = !_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection;
+			sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
+			updateNotes();
+		}, null, function(s:FlxText)
 		{
 			toolInfo.text = "If true, camera focuses on bf. Otherwise, camera focuses on enemy. Toggle with E";
+			toolInfo.x = FlxG.width - toolInfo.width;
+		}, function(s:FlxText)
+		{
+			toolInfo.text = "hover over things to see what they do";
+			toolInfo.x = FlxG.width - toolInfo.width;
+		}, false, true, false);
+		FlxMouseEventManager.add(sectionInfo.altAnimTxt, function(s:FlxText)
+		{
+			_song.notes[getSussySectionFromY(strumLine.y)].altAnim = !_song.notes[getSussySectionFromY(strumLine.y)].altAnim;
+			sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
+		}, null, function(s:FlxText)
+		{
+			toolInfo.text = "If true,enemy uses alt anim. Otherwise, enemy uses default anim.";
+			toolInfo.x = FlxG.width - toolInfo.width;
+		}, function(s:FlxText)
+		{
+			toolInfo.text = "hover over things to see what they do";
+			toolInfo.x = FlxG.width - toolInfo.width;
+		}, false, true, false);
+		FlxMouseEventManager.add(sectionInfo.altNumTxt, null, null, function(s:FlxText)
+		{
+			toolInfo.text = "Number of alt anim used. Overwrites Alt Anim Bool.";
+			toolInfo.x = FlxG.width - toolInfo.width;
+		}, function(s:FlxText)
+		{
+			toolInfo.text = "hover over things to see what they do";
+			toolInfo.x = FlxG.width - toolInfo.width;
+		}, false, true, false);
+		FlxMouseEventManager.add(noteInfo.altNoteTxt, function(s:FlxText)
+		{
+			curSelectedNote[3] = !curSelectedNote[3];
+			noteInfo.updateNote(curSelectedNote);
+		}, null, function(s:FlxText)
+		{
+			toolInfo.text = "If this note should trigger an alt anim.";
 			toolInfo.x = FlxG.width - toolInfo.width;
 		}, function(s:FlxText)
 		{
@@ -169,6 +224,8 @@ class PlayState extends FlxState
 		add(saveButton);
 		add(loadVocalsButton);
 		add(sectionInfo);
+		add(loadInstButton);
+		add(noteInfo);
 		add(toolInfo);
 	}
 
@@ -216,6 +273,13 @@ class PlayState extends FlxState
 			FlxG.keys.pressed.SEVEN,
 			FlxG.keys.pressed.EIGHT
 		];
+		if (FlxG.mouse.overlaps(sectionInfo) && _song.notes.length > 0)
+		{
+			if (_song.notes[getSussySectionFromY(strumLine.y)].altAnimNum != sectionInfo.stepperAnim.value)
+			{
+				_song.notes[getSussySectionFromY(strumLine.y)].altAnimNum = Std.int(sectionInfo.stepperAnim.value);
+			}
+		}
 		if (FlxG.keys.justPressed.UP)
 		{
 			moveStrumLine(-1);
@@ -244,24 +308,46 @@ class PlayState extends FlxState
 		}
 		if (FlxG.keys.justPressed.ESCAPE && curSelectedNote != null)
 		{
-			curSelectedNote = null;
+			deselectNote();
 		}
-		if (FlxG.keys.justPressed.SPACE)
+		if (FlxG.keys.justPressed.HOME)
 		{
-			if (FlxG.sound.music != null && FlxG.sound.music.playing)
+			strumLine.y = 0;
+			moveStrumLine(0);
+		}
+		if (curSelectedNote != null)
+		{
+			curSelectedNote[3] = Std.int(noteInfo.stepperAltNote.value);
+		}
+		if (FlxG.keys.justPressed.SPACE && FlxG.sound.music != null)
+		{
+			if (FlxG.sound.music.playing)
 			{
 				FlxG.sound.music.pause();
+				if (_song.needsVoices && vocalSound != null)
+				{
+					vocalSound.pause();
+				}
 			}
 			else
 			{
 				FlxG.sound.music.time = getSussyStrumTime(strumLine.y);
 				FlxG.sound.music.play();
+				if (_song.needsVoices && vocalSound != null)
+				{
+					vocalSound.play();
+				}
 			}
 		}
 		if (FlxG.sound.music != null && FlxG.sound.music.playing)
 		{
 			strumLine.y = getSussyYPos(FlxG.sound.music.time);
+			curSectionTxt.text = 'Section: ' + getSussySectionFromY(strumLine.y);
 			sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
+			if (_song.needsVoices && vocalSound != null && !CoolUtil.nearlyEquals(vocalSound.time, FlxG.sound.music.time, 2))
+			{
+				vocalSound.time = FlxG.sound.music.time;
+			}
 		}
 		for (i in 0...noteControls.length)
 		{
@@ -284,11 +370,6 @@ class PlayState extends FlxState
 		{
 			if (!noteRelease[i])
 				continue;
-			/*
-				if (curSelectedNote != null && i % 4 == curSelectedNote[1] % 4)
-				{
-					curSelectedNote = null;
-			}*/
 		}
 	}
 
@@ -352,7 +433,7 @@ class PlayState extends FlxState
 					sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
 				}
 				FlxSpriteUtil.drawLine(staffLines, FlxG.width * -0.5, LINE_SPACING * ((i * 16) + o), FlxG.width * 1.5, LINE_SPACING * ((i * 16) + o),
-					{color: FlxColor.WHITE, thickness: 10});
+					{color: lineColor, thickness: 5});
 				lastLineY = LINE_SPACING * ((i * 16) + o);
 			}
 		}
@@ -394,7 +475,7 @@ class PlayState extends FlxState
 			}
 			curSelectedNote[2] = 0;
 		}
-		curSelectedNote = null;
+		deselectNote();
 		updateNotes();
 	}
 
@@ -482,6 +563,13 @@ class PlayState extends FlxState
 		}
 	}
 
+	private function deselectNote():Void
+	{
+		curSelectedNote = null;
+		sectionInfo.visible = true;
+		noteInfo.visible = false;
+	}
+
 	private function selectNote(id:Int):Void
 	{
 		var noteStrum = getSussyStrumTime(strumLine.members[id].y);
@@ -502,11 +590,15 @@ class PlayState extends FlxState
 			noteData = sussyInfo;
 		}
 		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, useLiftNote];
+
 		for (note in _song.notes[curSection].sectionNotes)
 		{
 			if (CoolUtil.truncateFloat(note[0], 1) == CoolUtil.truncateFloat(goodArray[0], 1) && note[1] == noteData)
 			{
 				curSelectedNote = note;
+				sectionInfo.visible = false;
+				noteInfo.visible = true;
+				noteInfo.updateNote(curSelectedNote);
 				updateNotes();
 				return;
 			}

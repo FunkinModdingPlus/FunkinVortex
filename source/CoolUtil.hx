@@ -65,6 +65,11 @@ class CoolUtil
 		num = Math.round(num) / Math.pow(10, precision);
 		return num;
 	}
+
+	public static function nearlyEquals(v1:Float, v2:Float, by:Float = 10):Bool
+	{
+		return Math.abs(v1 - v2) < by;
+	}
 }
 
 class FlxTools

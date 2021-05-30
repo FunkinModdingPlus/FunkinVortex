@@ -111,8 +111,14 @@ class FNFAssets
 			if (fdString != null)
 			{
 				promise.complete(FNFAssets.getText(fdString));
+				checkTimer.stop();
 			}
 		}
+		fd.onCancel.add(function()
+		{
+			promise.error("user cancelled");
+			checkTimer.stop();
+		});
 		return promise.future;
 	}
 
@@ -129,8 +135,14 @@ class FNFAssets
 			if (fdString != null)
 			{
 				promise.complete(fdString);
+				checkTimer.stop();
 			}
 		}
+		fd.onCancel.add(function()
+		{
+			promise.error("user cancelled");
+			checkTimer.stop();
+		});
 		return promise.future;
 	}
 
