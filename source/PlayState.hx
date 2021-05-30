@@ -31,6 +31,8 @@ class PlayState extends FlxState
 	var LINE_SPACING = 40;
 	var camFollow:FlxObject;
 	var lastLineY:Int = 0;
+	var sectionMarkers:Array<Float> = [];
+	var songLengthInSteps:Int = 0;
 
 	override public function create()
 	{
@@ -79,7 +81,6 @@ class PlayState extends FlxState
 		snaptext = new FlxText(0, FlxG.height, 0, '4ths', 24);
 		snaptext.y -= snaptext.height;
 		snaptext.scrollFactor.set();
-		chart.scale.set(0.4, 0.4);
 		add(staffLines);
 		add(strumLine);
 		add(curRenderedNotes);
@@ -172,8 +173,8 @@ class PlayState extends FlxState
 					babyArrow.animation.play("red");
 			}
 			babyArrow.antialiasing = true;
-			babyArrow.setGraphicSize(Std.int(babyArrow.width * 0.4));
-			babyArrow.x += Note.swagWidth * i + 50;
+			babyArrow.setGraphicSize(Std.int(40));
+			babyArrow.x += 160 * babyArrow.scale.x * i + 50;
 			babyArrow.updateHitbox();
 			babyArrow.scrollFactor.set();
 			babyArrow.ID = i;
@@ -220,6 +221,7 @@ class PlayState extends FlxState
 					Conductor.changeBPM(_song.notes[i].bpm);
 			}*/
 			Conductor.changeBPM(_song.bpm);
+			songLengthInSteps += _song.notes[j].lengthInSteps;
 			for (i in sectionInfo)
 			{
 				var daNoteInfo = i[1];
