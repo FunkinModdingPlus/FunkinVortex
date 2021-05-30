@@ -98,12 +98,12 @@ class FNFAssets
 		#end
 	}
 
-	public static function askToBrowse():Future<String>
+	public static function askToBrowse(?filter:String):Future<String>
 	{
 		fdString = null;
 		fd = new FileDialog();
 		fd.onSelect.add(onSelect);
-		fd.browse(FileDialogType.OPEN, null, null, "Select a chart");
+		fd.browse(FileDialogType.OPEN, filter, null, "Select a chart");
 		var checkTimer = new Timer(50);
 		var promise = new Promise<String>();
 		checkTimer.run = function()

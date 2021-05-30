@@ -98,7 +98,7 @@ class PlayState extends FlxState
 
 	private function loadFromFile():Void
 	{
-		var future = FNFAssets.askToBrowse();
+		var future = FNFAssets.askToBrowse("json,mpluschart");
 		future.onComplete(function(s:String)
 		{
 			_song = Song.loadFromJson(s);
