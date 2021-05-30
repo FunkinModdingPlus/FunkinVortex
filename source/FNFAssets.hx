@@ -116,6 +116,24 @@ class FNFAssets
 		return promise.future;
 	}
 
+	public static function askToBrowseForPath(?filter:String):Future<String>
+	{
+		fdString = null;
+		fd = new FileDialog();
+		fd.onSelect.add(onSelect);
+		fd.browse(FileDialogType.OPEN, filter, null, "Select a chart");
+		var checkTimer = new Timer(50);
+		var promise = new Promise<String>();
+		checkTimer.run = function()
+		{
+			if (fdString != null)
+			{
+				promise.complete(fdString);
+			}
+		}
+		return promise.future;
+	}
+
 	static function onSelect(s:String):Void
 	{
 		trace(s);
