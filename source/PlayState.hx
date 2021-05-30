@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
 import flixel.FlxState;
+import flixel.addons.display.FlxGridOverlay;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
@@ -34,6 +35,10 @@ class PlayState extends FlxState
 	var sectionMarkers:Array<Float> = [];
 	var songLengthInSteps:Int = 0;
 	var songSectionTimes:Array<Float> = [];
+	var useLiftNote:Bool = false;
+	var noteControls:Array<Bool> = [false, false, false, false, false, false, false, false];
+	var noteRelease:Array<Bool> = [false, false, false, false, false, false, false, false];
+	var noteHold:Array<Bool> = [false, false, false, false, false, false, false, false];
 
 	override public function create()
 	{
@@ -105,6 +110,36 @@ class PlayState extends FlxState
 	{
 		super.update(elapsed);
 		camFollow.setPosition(strumLine.x + Note.swagWidth * 2, strumLine.y);
+		noteControls = [
+			FlxG.keys.justPressed.ONE,
+			FlxG.keys.justPressed.TWO,
+			FlxG.keys.justPressed.THREE,
+			FlxG.keys.justPressed.FOUR,
+			FlxG.keys.justPressed.FIVE,
+			FlxG.keys.justPressed.SIX,
+			FlxG.keys.justPressed.SEVEN,
+			FlxG.keys.justPressed.EIGHT
+		];
+		noteRelease = [
+			FlxG.keys.justReleased.ONE,
+			FlxG.keys.justReleased.TWO,
+			FlxG.keys.justReleased.THREE,
+			FlxG.keys.justReleased.FOUR,
+			FlxG.keys.justReleased.FIVE,
+			FlxG.keys.justReleased.SIX,
+			FlxG.keys.justReleased.SEVEN,
+			FlxG.keys.justReleased.EIGHT
+		];
+		noteHold = [
+			FlxG.keys.pressed.ONE,
+			FlxG.keys.pressed.TWO,
+			FlxG.keys.pressed.THREE,
+			FlxG.keys.pressed.FOUR,
+			FlxG.keys.pressed.FIVE,
+			FlxG.keys.pressed.SIX,
+			FlxG.keys.pressed.SEVEN,
+			FlxG.keys.pressed.EIGHT
+		];
 		if (FlxG.keys.justPressed.UP)
 		{
 			moveStrumLine(-1);
@@ -112,6 +147,10 @@ class PlayState extends FlxState
 		else if (FlxG.keys.justPressed.DOWN)
 		{
 			moveStrumLine(1);
+		}
+		if (FlxG.keys.justPressed.Q)
+		{
+			useLiftNote = !useLiftNote;
 		}
 		if (FlxG.keys.justPressed.RIGHT)
 		{
@@ -143,12 +182,40 @@ class PlayState extends FlxState
 					curSnap = (LINE_SPACING * 16) / 8;
 			}
 		}
+		for (i in 0...noteControls.length)
+		{
+			if (!noteControls[i])
+				continue;
+			if (FlxG.keys.pressed.CONTROL)
+			{
+				selectNote(i);
+			}
+			else
+			{
+				addNote(i);
+			}
+		}
+		for (i in 0...noteRelease.length)
+		{
+			if (!noteRelease[i])
+				continue;
+			if (curSelectedNote != null && i % 4 == curSelectedNote[1] % 4)
+			{
+				curSelectedNote = null;
+			}
+		}
 	}
 
 	private function moveStrumLine(change:Int = 0)
 	{
 		strumLine.y += change * curSnap;
 		strumLine.y = Math.floor(strumLine.y / curSnap) * curSnap;
+		if (curSelectedNote != null)
+		{
+			curSelectedNote[2] = getSussyStrumTime(strumLine.y) - curSelectedNote[0];
+			curSelectedNote[2] = FlxMath.bound(curSelectedNote[2], 0);
+			updateNotes();
+		}
 	}
 
 	private function generateStrumLine()
@@ -185,7 +252,7 @@ class PlayState extends FlxState
 
 	private function drawChartLines()
 	{
-		staffLines.makeGraphic(FlxG.width, FlxG.height * _song.notes.length * 16, FlxColor.BLACK);
+		staffLines.makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.BLACK);
 		for (i in 0..._song.notes.length)
 		{
 			for (o in 0..._song.notes[i].lengthInSteps)
@@ -197,8 +264,73 @@ class PlayState extends FlxState
 					sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
 				}
 				FlxSpriteUtil.drawLine(staffLines, FlxG.width * -0.5, LINE_SPACING * ((i * 16) + o), FlxG.width * 1.5, LINE_SPACING * ((i * 16) + o),
-					{color: lineColor, thickness: 10});
+					{color: FlxColor.WHITE, thickness: 10});
 				lastLineY = LINE_SPACING * ((i * 16) + o);
+			}
+		}
+	}
+
+	private function addNote(id:Int):Void
+	{
+		var noteStrum = getSussyStrumTime(strumLine.members[id].y);
+		var noteData = id;
+		var noteSus = 0;
+		var curSection = getSussySectionFromY(strumLine.members[id].y);
+		if (_song.notes[curSection].mustHitSection)
+		{
+			var sussyInfo = 0;
+			if (noteData > 3)
+			{
+				sussyInfo = noteData % 4;
+			}
+			else
+			{
+				sussyInfo = noteData + 4;
+			}
+			noteData = sussyInfo;
+		}
+		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, useLiftNote];
+		for (note in _song.notes[curSection].sectionNotes)
+		{
+			if (CoolUtil.truncateFloat(note[0], 1) == CoolUtil.truncateFloat(goodArray[0], 1) && note[1] == noteData)
+			{
+				_song.notes[curSection].sectionNotes.remove(note);
+				updateNotes();
+				return;
+			}
+		}
+		_song.notes[curSection].sectionNotes.push([noteStrum, noteData, noteSus, false, useLiftNote]);
+
+		updateNotes();
+	}
+
+	private function selectNote(id:Int):Void
+	{
+		var noteStrum = getSussyStrumTime(strumLine.members[id].y);
+		var noteData = id;
+		var noteSus = 0;
+		var curSection = getSussySectionFromY(strumLine.members[id].y);
+		if (_song.notes[curSection].mustHitSection)
+		{
+			var sussyInfo = 0;
+			if (noteData > 3)
+			{
+				sussyInfo = noteData % 4;
+			}
+			else
+			{
+				sussyInfo = noteData + 4;
+			}
+			noteData = sussyInfo;
+		}
+		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, useLiftNote];
+		for (note in _song.notes[curSection].sectionNotes)
+		{
+			if (CoolUtil.truncateFloat(note[0], 1) == CoolUtil.truncateFloat(goodArray[0], 1) && note[1] == noteData)
+			{
+				curSelectedNote = note;
+				updateNotes();
+				return;
 			}
 		}
 	}
@@ -250,7 +382,7 @@ class PlayState extends FlxState
 					}
 					note.x = strumLine.members[sussyInfo].x;
 				}
-				note.y = Math.floor(getYfromStrum((daStrumTime - sectionStartTime(j)) % (Conductor.stepCrochet * _song.notes[j].lengthInSteps), j));
+				note.y = Math.floor(getYfromStrum(daStrumTime, j));
 				curRenderedNotes.add(note);
 				if (daSus > 0)
 				{
@@ -264,7 +396,37 @@ class PlayState extends FlxState
 
 	private function getYfromStrum(strumTime:Float, section:Int):Float
 	{
-		return FlxMath.remapToRange(strumTime, songSectionTimes[section], songSectionTimes[section + 1], sectionMarkers[section], sectionMarkers[section + 1]);
+		return FlxMath.remapToRange(strumTime, sectionStartTime(section), sectionStartTime(section + 1), sectionMarkers[section], sectionMarkers[section + 1]);
+	}
+
+	private function getStrumTime(yPos:Float, section:Int):Float
+	{
+		return FlxMath.remapToRange(yPos, sectionMarkers[section], sectionMarkers[section + 1], sectionStartTime(section), sectionStartTime(section + 1));
+	}
+
+	// Should be called "getAmbiguousStrumTime", too lazy to name it that
+	private function getSussyStrumTime(yPos:Float):Float
+	{
+		for (i in 0..._song.notes.length)
+		{
+			if (yPos >= sectionMarkers[i] && yPos < sectionMarkers[i + 1])
+			{
+				return getStrumTime(yPos, i);
+			}
+		}
+		return 0;
+	}
+
+	function getSussySectionFromY(yPos:Float):Int
+	{
+		for (i in 0..._song.notes.length)
+		{
+			if (yPos >= sectionMarkers[i] && yPos < sectionMarkers[i + 1])
+			{
+				return i;
+			}
+		}
+		return 0;
 	}
 
 	function sectionStartTime(section:Int):Float

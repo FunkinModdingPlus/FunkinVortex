@@ -57,6 +57,14 @@ class CoolUtil
 		var style:String = if (fancy) 'fancy' else null;
 		return TJSON.encode(json, style);
 	}
+
+	public static function truncateFloat(number:Float, precision:Int):Float
+	{
+		var num = number;
+		num = num * Math.pow(10, precision);
+		num = Math.round(num) / Math.pow(10, precision);
+		return num;
+	}
 }
 
 class FlxTools
