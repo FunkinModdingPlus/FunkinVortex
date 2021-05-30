@@ -33,6 +33,7 @@ class PlayState extends FlxState
 	var lastLineY:Int = 0;
 	var sectionMarkers:Array<Float> = [];
 	var songLengthInSteps:Int = 0;
+	var songSectionTimes:Array<Float> = [];
 
 	override public function create()
 	{
@@ -193,6 +194,7 @@ class PlayState extends FlxState
 				if (o == 0)
 				{
 					lineColor = FlxColor.WHITE;
+					sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
 				}
 				FlxSpriteUtil.drawLine(staffLines, FlxG.width * -0.5, LINE_SPACING * ((i * 16) + o), FlxG.width * 1.5, LINE_SPACING * ((i * 16) + o),
 					{color: lineColor, thickness: 10});
@@ -221,7 +223,9 @@ class PlayState extends FlxState
 					Conductor.changeBPM(_song.notes[i].bpm);
 			}*/
 			Conductor.changeBPM(_song.bpm);
+			songSectionTimes.push(songLengthInSteps);
 			songLengthInSteps += _song.notes[j].lengthInSteps;
+
 			for (i in sectionInfo)
 			{
 				var daNoteInfo = i[1];
@@ -246,7 +250,7 @@ class PlayState extends FlxState
 					}
 					note.x = strumLine.members[sussyInfo].x;
 				}
-				note.y = Math.floor(getYfromStrum(daStrumTime));
+				note.y = Math.floor(getYfromStrum((daStrumTime - sectionStartTime(j)) % (Conductor.stepCrochet * _song.notes[j].lengthInSteps), j));
 				curRenderedNotes.add(note);
 				if (daSus > 0)
 				{
@@ -258,8 +262,23 @@ class PlayState extends FlxState
 		}
 	}
 
-	private function getYfromStrum(strumTime:Float):Float
+	private function getYfromStrum(strumTime:Float, section:Int):Float
 	{
-		return FlxMath.remapToRange(strumTime, 0, 16 * Conductor.stepCrochet, 0, lastLineY);
+		return FlxMath.remapToRange(strumTime, songSectionTimes[section], songSectionTimes[section + 1], sectionMarkers[section], sectionMarkers[section + 1]);
+	}
+
+	function sectionStartTime(section:Int):Float
+	{
+		var daBPM:Int = _song.bpm;
+		var daPos:Float = 0;
+		for (i in 0...section)
+		{
+			if (_song.notes[i].changeBPM)
+			{
+				daBPM = _song.notes[i].bpm;
+			}
+			daPos += 4 * (1000 * 60 / daBPM);
+		}
+		return daPos;
 	}
 }
