@@ -42,11 +42,6 @@ jobs:
           haxelib install flixel-ui
           haxelib install flixel-addons
           haxelib install tjson
-          haxelib install hxjsonast
-          haxelib install linc_luajit
-          haxelib install hscript
-          haxelib git hscript-ex https://github.com/ianharrigan/hscript-ex
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
           haxelib install hxcpp-debug-server
           haxelib list
       - name: Create Version Tag
@@ -54,7 +49,7 @@ jobs:
       - name: Compile
         run: haxelib run lime build linux --app-version="4.0.0-${{ github.run_id}}"
       - name: Archive
-        run: tar -czf bin.tar.gz 'export/release/linux/bin' 
+        run: tar -czf bin.tar.gz 'export/linux/bin' 
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
         with:
@@ -84,12 +79,6 @@ jobs:
           haxelib install flixel-ui
           haxelib install flixel-addons
           haxelib install tjson
-          haxelib install hxjsonast
-          haxelib install linc_luajit
-          haxelib install hscript
-          haxelib git hscript-ex https://github.com/ianharrigan/hscript-ex
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
-          haxelib install hxcpp-debug-server
           haxelib list
         shell: cmd
       - name: Create Version Tag
@@ -97,7 +86,7 @@ jobs:
       - name: Compile
         run: haxelib run lime build windows --app-version="4.0.0-${{ github.run_id}}"
       - name: Archive
-        run: tar -czf bin.tar.gz export/release/windows/bin
+        run: tar -czf bin.tar.gz export/windows/bin
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
         with:
@@ -127,11 +116,6 @@ jobs:
           haxelib install flixel-ui
           haxelib install flixel-addons
           haxelib install tjson
-          haxelib install hxjsonast
-          haxelib install linc_luajit
-          haxelib install hscript
-          haxelib git hscript-ex https://github.com/ianharrigan/hscript-ex
-          haxelib git discord_rpc https://github.com/Aidan63/linc_discord-rpc
           haxelib install hxcpp-debug-server
           haxelib list
       - name: Create Version Tag
@@ -139,7 +123,7 @@ jobs:
       - name: Compile
         run: haxelib run lime build mac --app-version="4.0.0-${{ github.run_id}}"
       - name: Archive
-        run: tar -czf bin.tar.gz export/release/macos/bin
+        run: tar -czf bin.tar.gz export/macos/bin
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
         with:
