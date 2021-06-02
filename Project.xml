@@ -2,7 +2,7 @@
 <project>
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Funkin Vortex" file="FunkinVortex" main="Main" version="0.0.1" company="HaxeFlixel" />
+	<app title="Funkin Vortex" file="FunkinVortex" main="Main" version="0.0.1" company="BulbyVR" />
 
 	<!--The flixel preloader is not accurate in Chrome. You can use it regularly if you embed the swf into a html file
 		or you can set the actual size of your file manually at "FlxPreloaderBase-onUpdate-bytesTotal"-->
@@ -30,7 +30,7 @@
 	<set name="BUILD_DIR" value="export" />
 	<classpath name="source" />
 	<assets path="assets" />
-
+	<assets path="NOTICE"/>
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="flixel" />
@@ -77,4 +77,7 @@
 	<!-- _________________________________ Custom _______________________________ -->
 
 	<!--Place custom nodes like icons here (higher priority to override the HaxeFlixel icon)-->
+	<icon path="icons/iconx64.png" size='64'/>
+	<icon path="icons/iconx32.png" size='32'/>
+	<icon path="icons/iconx16.png" size='16'/>
 </project>
