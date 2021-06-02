@@ -85,13 +85,24 @@ jobs:
         run: echo "${{github.run_id}}" > VERSION
       - name: Compile
         run: haxelib run lime build windows --app-version="4.0.0-${{ github.run_id}}"
+      
       - name: Archive
         run: tar -czf bin.tar.gz export/windows/bin
+      
       - name: Publish Artifact
         uses: actions/upload-artifact@v2
         with:
           name: windowsBuild
           path: bin.tar.gz
+      - name: Compile 32 bit
+        run: haxelib run lime build windows -D32bit
+      - name: Archive
+        run: tar -czf 32bit.tar.gz export/32bit/windows/bin
+      - name: Publish 32bit
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows32Build
+          path: 32bit.tar.gz
   buildMac:
     runs-on: macos-latest
 

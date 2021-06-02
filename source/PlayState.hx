@@ -1,5 +1,6 @@
 package;
 
+import Song.SwagSong;
 import flixel.FlxG;
 import flixel.FlxObject;
 import flixel.FlxSprite;
@@ -11,6 +12,7 @@ import flixel.addons.ui.FlxUIInputText;
 import flixel.addons.ui.FlxUINumericStepper;
 import flixel.addons.ui.FlxUIState;
 import flixel.addons.ui.FlxUITabMenu;
+import flixel.addons.weapon.FlxBullet;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.group.FlxSpriteGroup;
@@ -60,6 +62,7 @@ class PlayState extends FlxUIState
 
 	var openButton:FlxButton;
 	var saveButton:FlxButton;
+	var exportButton:FlxButton;
 	var loadVocalsButton:FlxButton;
 	var loadInstButton:FlxButton;
 	var sectionTabBtn:FlxButton;
@@ -133,7 +136,49 @@ class PlayState extends FlxUIState
 		saveButton = new FlxButton(10, 40, "Save Chart", function()
 		{
 			var json = {
-				"song": _song
+				"song": _song,
+				"generatedBy": "ModdingPlus",
+				"programUsed": "FunkinVortex"
+			};
+			var data = Json.stringify(json);
+			if ((data != null) && (data.length > 0))
+				FNFAssets.askToSave("song", data);
+		});
+		exportButton = new FlxButton(10, 130, "Export To Base Game...", function()
+		{
+			var cloneThingie = new Cloner();
+
+			var sussySong:SwagSong = cloneThingie.clone(_song);
+			// WE HAVE TO STRIP OUT ALL THE GOOD STUFF :grief:
+			Reflect.deleteField(sussySong, "gf");
+			Reflect.deleteField(sussySong, "stage");
+			Reflect.deleteField(sussySong, "isMoody");
+			Reflect.deleteField(sussySong, "isSpooky");
+			Reflect.deleteField(sussySong, "uiType");
+			Reflect.deleteField(sussySong, "cutsceneType");
+			Reflect.deleteField(sussySong, "isHey");
+			Reflect.deleteField(sussySong, "isCheer");
+			for (i in 0...sussySong.notes.length)
+			{
+				for (j in 0...sussySong.notes[i].sectionNotes.length)
+				{
+					var noteThingie:Array<Dynamic> = sussySong.notes[i].sectionNotes[j];
+					// remove lift info
+					noteThingie[4] = null;
+					if ((noteThingie[3] is Int))
+					{
+						if (noteThingie[3] > 0)
+							noteThingie[3] = true;
+						else
+							noteThingie[3] = false;
+					}
+				}
+				Reflect.deleteField(sussySong.notes[i], "altAnimNum");
+			}
+			var json = {
+				"song": sussySong,
+				"generatedBy": "SNIFF ver.6",
+				"programUsed": "FunkinVortex"
 			};
 			var data = Json.stringify(json);
 			if ((data != null) && (data.length > 0))
