@@ -24,7 +24,12 @@ import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 import flixel.util.FlxSpriteUtil;
 import haxe.Json;
+import haxe.ui.Toolkit;
+import haxe.ui.components.Button;
+import haxe.ui.events.MouseEvent;
 import openfl.media.Sound;
+
+// import bulbytools.Assets;
 
 enum abstract Snaps(Int) from Int to Int
 {
@@ -59,7 +64,7 @@ class PlayState extends FlxUIState
 	var curSnap:Float = 0;
 
 	var ui_box:FlxUITabMenu;
-
+	var haxeUIOpen:Button;
 	var openButton:FlxButton;
 	var saveButton:FlxButton;
 	var exportButton:FlxButton;
@@ -133,6 +138,19 @@ class PlayState extends FlxUIState
 		chart.add(curRenderedSus);
 		FlxG.mouse.useSystemCursor = true;
 		openButton = new FlxButton(10, 10, "Open Chart", loadFromFile);
+		haxeUIOpen = new Button();
+		haxeUIOpen.x = 10;
+		haxeUIOpen.y = 40;
+		haxeUIOpen.text = "Open Chart";
+		haxeUIOpen.onClick = function(e:MouseEvent)
+		{
+			var future = FNFAssets.askToBrowse("json");
+			future.onComplete(function(s:String)
+			{
+				_song = Song.loadFromJson(s);
+				FlxG.resetState();
+			});
+		};
 		saveButton = new FlxButton(10, 40, "Save Chart", function()
 		{
 			var json = {
@@ -244,7 +262,8 @@ class PlayState extends FlxUIState
 		add(chart);
 		add(snaptext);
 		add(curSectionTxt);
-		add(openButton);
+		// add(openButton);
+		add(haxeUIOpen);
 		add(saveButton);
 		add(loadVocalsButton);
 		add(loadInstButton);
