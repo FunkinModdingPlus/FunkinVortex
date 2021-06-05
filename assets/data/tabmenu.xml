@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabview width="300" height="400">
+    <vbox text="Display Info">
+
+        <textfield placeholder="boyfriend" id="bfText" style="font-size: 11px;"/>
+        <textfield placeholder="dad" id="enemyText" style="font-size: 11px;"/>
+        <textfield placeholder="gf" id="gfText" style="font-size: 11px;"/>
+        <textfield placeholder="stage" id="stageText" style="font-size: 11px;"/>
+        <textfield placeholder="none" id="cutsceneText" style="font-size: 11px;"/>
+        <textfield placeholder="normal" id="uiText" style="font-size: 11px;"/>
+    </vbox>
+    <vbox text="Note Info">
+        <number-stepper max="999" id="altnotestep" style="font-size: 11px;"/>
+        <checkbox text="Is Alt Note" id="altnotecheck"/>
+    </vbox>
+    <vbox text="Section Info">
+        <number-stepper step="4" max="999" id="sectionlength" style="font-size: 11px;"/>
+        <number-stepper max="999" id="sectionbpm" style="font-size: 11px;"/>
+        <number-stepper max="999" id="altsection" style="font-size: 11px;"/>
+        <button id="swapsection" text="Swap Section" />
+        <checkbox text="Must hit section" id="musthitsection"/>
+        <checkbox text="Change BPM" id="changebpmsection"/>
+        <button text="Add Section" id="addsection"/>
+        <button text="Clear Section" id="clearsection"/>
+    </vbox>
+    <vbox text="Song Info">
+        <textfield placeholder="Test" id="songTitle" style="font-size: 11px;"/>
+        <checkbox text="Needs Voices" id="needsVoices"/>
+        <checkbox text="Mute Inst in Editor" id="muteInst"/>
+        <checkbox text="Is Spooky (thorns dad trail)" id="isspooky"/>
+        <checkbox text="Is Moody (Roses Fangirls)" id="ismoody"/>
+        <checkbox text="Is Hey (Bopeebo)" id="ishey"/>
+        <checkbox text="Is Cheer" id="ischeer"/>
+        <number-stepper step="0.1" max="10" min="0.1" precision="1" id="songspeed" style="font-size: 11px;"/>
+        <number-stepper max="339" min="1" id="songbpm" style="font-size: 11px;"/>
+
+    </vbox>
+</tabview>

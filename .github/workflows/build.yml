@@ -43,10 +43,8 @@ jobs:
           haxelib install flixel-addons
           haxelib install tjson
           haxelib install hxcpp-debug-server
-          haxelib install haxeui
-          haxelib install haxeui-core
-          haxelib install haxeui-flixel
-          haxelib install haxeui-file-dialogs
+          haxelib git haxeui-core https://github.com/haxeui/haxeui-core
+          haxelib git haxeui-flixel https://github.com/haxeui/haxeui-flixel
           haxelib list
       - name: Create Version Tag
         run: echo "${{github.run_id}}" > VERSION
@@ -83,10 +81,8 @@ jobs:
           haxelib install flixel-ui
           haxelib install flixel-addons
           haxelib install tjson
-          haxelib install haxeui
-          haxelib install haxeui-core
-          haxelib install haxeui-flixel
-          haxelib install haxeui-file-dialogs
+          haxelib git haxeui-core https://github.com/haxeui/haxeui-core
+          haxelib git haxeui-flixel https://github.com/haxeui/haxeui-flixel
           haxelib list
         shell: cmd
       - name: Create Version Tag
@@ -136,10 +132,8 @@ jobs:
           haxelib install flixel-addons
           haxelib install tjson
           haxelib install hxcpp-debug-server
-          haxelib install haxeui
-          haxelib install haxeui-core
-          haxelib install haxeui-flixel
-          haxelib install haxeui-file-dialogs
+          haxelib git haxeui-core https://github.com/haxeui/haxeui-core
+          haxelib git haxeui-flixel https://github.com/haxeui/haxeui-flixel
           haxelib list
       - name: Create Version Tag
         run: echo "${{github.run_id}}" > VERSION

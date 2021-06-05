@@ -10,6 +10,7 @@ class Main extends Sprite
 	{
 		super();
 		Toolkit.init();
+		Toolkit.theme = "dark";
 		addChild(new FlxGame(0, 0, PlayState));
 	}
 }
