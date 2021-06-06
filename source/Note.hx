@@ -81,6 +81,13 @@ class Note extends FlxSprite
 		animation.addByPrefix('redhold', 'red hold piece');
 		animation.addByPrefix('bluehold', 'blue hold piece');
 
+		if (isLiftNote)
+		{
+			animation.addByPrefix('greenScroll', 'green lift');
+			animation.addByPrefix('redScroll', 'red lift');
+			animation.addByPrefix('blueScroll', 'blue lift');
+			animation.addByPrefix('purpleScroll', 'purple lift');
+		}
 		setGraphicSize(Std.int(width * 0.7));
 		updateHitbox();
 		antialiasing = true;

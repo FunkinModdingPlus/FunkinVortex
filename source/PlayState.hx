@@ -137,7 +137,8 @@ class PlayState extends FlxUIState
 				isMoody: false,
 				cutsceneType: "none",
 				uiType: 'normal',
-				isCheer: false
+				isCheer: false,
+				preferredNoteAmount: 4
 			};
 		// make it ridulously big
 		staffLines = new FlxSprite().makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.BLACK);
@@ -383,6 +384,53 @@ class PlayState extends FlxUIState
 				curSelectedNote[3] = tabviewThingy.findComponent("altnotestep", NumberStepper).pos;
 			updateNoteUI();
 		};
+		tabviewThingy.findComponent("noteheal", NumberStepper).onChange = function(_)
+		{
+			if (curSelectedNote != null)
+				curSelectedNote[5] = tabviewThingy.findComponent("noteheal", NumberStepper).pos;
+			updateNoteUI();
+		};
+		tabviewThingy.findComponent("notehurt", NumberStepper).onChange = function(_)
+		{
+			if (curSelectedNote != null)
+				curSelectedNote[6] = tabviewThingy.findComponent("notehurt", NumberStepper).pos;
+			updateNoteUI();
+		};
+		tabviewThingy.findComponent("consistentHealth", CheckBox).onChange = function(e:UIEvent)
+		{
+			if (curSelectedNote != null)
+			{
+				curSelectedNote[7] = tabviewThingy.findComponent("consistentHealth", CheckBox).selected;
+			}
+			updateNoteUI();
+		};
+		tabviewThingy.findComponent("notetiming", NumberStepper).onChange = function(_)
+		{
+			if (curSelectedNote != null)
+				curSelectedNote[8] = tabviewThingy.findComponent("notetiming", NumberStepper).pos;
+			updateNoteUI();
+		};
+		tabviewThingy.findComponent("consistentHealth", CheckBox).selected = false;
+		tabviewThingy.findComponent("shouldSing", CheckBox).onChange = function(e:UIEvent)
+		{
+			if (curSelectedNote != null)
+			{
+				curSelectedNote[9] = tabviewThingy.findComponent("shouldSing", CheckBox).selected;
+			}
+			updateNoteUI();
+		};
+		tabviewThingy.findComponent("ignoreMods", CheckBox).onChange = function(e:UIEvent)
+		{
+			if (curSelectedNote != null)
+			{
+				curSelectedNote[10] = tabviewThingy.findComponent("ignoreMods", CheckBox).selected;
+			}
+			updateNoteUI();
+		};
+		tabviewThingy.findComponent("animSuffix", TextField).text = "";
+		tabviewThingy.findComponent("shouldSing", CheckBox).selected = false;
+		tabviewThingy.findComponent("ignoreMods", CheckBox).selected = false;
+
 		tabviewThingy.x = FlxG.width / 2;
 		tabviewThingy.y = 100;
 		LINE_SPACING = Std.int(strumLine.height);
@@ -453,6 +501,10 @@ class PlayState extends FlxUIState
 		_song.cutsceneType = tabviewThingy.findComponent("cutsceneText", TextField).text;
 		_song.uiType = tabviewThingy.findComponent("uiText", TextField).text;
 		_song.song = tabviewThingy.findComponent("songTitle", TextField).text;
+		if (curSelectedNote != null)
+		{
+			curSelectedNote[11] = tabviewThingy.findComponent("animSuffix", TextField).text;
+		}
 	}
 
 	/*
@@ -704,6 +756,13 @@ class PlayState extends FlxUIState
 			// null is falsy
 			tabviewThingy.findComponent("altnotecheck", CheckBox).selected = cast curSelectedNote[3];
 			tabviewThingy.findComponent("altnotestep", NumberStepper).pos = curSelectedNote[3] != null ? curSelectedNote[3] : 0;
+			tabviewThingy.findComponent("noteheal", NumberStepper).pos = curSelectedNote[5] != null ? curSelectedNote[5] : 1;
+			tabviewThingy.findComponent("notehurt", NumberStepper).pos = curSelectedNote[6] != null ? curSelectedNote[6] : 1;
+			tabviewThingy.findComponent("consistentHealth", CheckBox).selected = cast curSelectedNote[7];
+			tabviewThingy.findComponent("notetiming", NumberStepper).pos = curSelectedNote[8] != null ? curSelectedNote[8] : 1;
+			tabviewThingy.findComponent("shouldSing", CheckBox).selected = curSelectedNote[9] != null ? curSelectedNote[9] : true;
+			tabviewThingy.findComponent("ignoreMods", CheckBox).selected = cast curSelectedNote[10];
+			tabviewThingy.findComponent("animSuffix", TextField).text = curSelectedNote[11] != null ? curSelectedNote[11] : "";
 		}
 	}
 
@@ -1053,6 +1112,7 @@ class PlayState extends FlxUIState
 
 	private function deselectNote():Void
 	{
+		updateTextParams();
 		curSelectedNote = null;
 		// sectionInfo.visible = true;
 		// noteInfo.visible = false;
