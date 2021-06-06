@@ -185,7 +185,7 @@ class PlayState extends FlxUIState
 		loadInstMenu.text = "Load Instrument";
 		loadInstMenu.onClick = function(e:MouseEvent)
 		{
-			var future = FNFAssets.askToBrowseForPath("ogg");
+			var future = FNFAssets.askToBrowseForPath("ogg", "Select Instrument Tract");
 			future.onComplete(function(s:String)
 			{
 				musicSound = Sound.fromFile(s);
@@ -197,7 +197,7 @@ class PlayState extends FlxUIState
 		loadVoiceMenu.text = "Load Vocals";
 		loadVoiceMenu.onClick = function(e:MouseEvent)
 		{
-			var future = FNFAssets.askToBrowseForPath("ogg");
+			var future = FNFAssets.askToBrowseForPath("ogg", "Select Voice Track");
 			future.onComplete(function(s:String)
 			{
 				vocals = Sound.fromFile(s);

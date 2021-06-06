@@ -45,8 +45,6 @@
 	<haxelib name="haxeui-core"/>
 	<!-- git https://github.com/haxeui/haxeui-flixel-->
 	<haxelib name="haxeui-flixel"/>
-	<!-- It isn't all lowercase because i suck as a person -->
-	<!-- <haxelib name="bulbytools"/> -->
 
 	<!-- ______________________________ Haxedefines _____________________________ -->
 

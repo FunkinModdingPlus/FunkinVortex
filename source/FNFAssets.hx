@@ -98,12 +98,12 @@ class FNFAssets
 		#end
 	}
 
-	public static function askToBrowse(?filter:String):Future<String>
+	public static function askToBrowse(?filter:String, ?title:String = "Select a Chart"):Future<String>
 	{
 		fdString = null;
 		fd = new FileDialog();
 		fd.onSelect.add(onSelect);
-		fd.browse(FileDialogType.OPEN, filter, null, "Select a chart");
+		fd.browse(FileDialogType.OPEN, filter, null, title);
 		var checkTimer = new Timer(50);
 		var promise = new Promise<String>();
 		checkTimer.run = function()
@@ -122,12 +122,12 @@ class FNFAssets
 		return promise.future;
 	}
 
-	public static function askToBrowseForPath(?filter:String):Future<String>
+	public static function askToBrowseForPath(?filter:String, ?title:String = "Select a chart"):Future<String>
 	{
 		fdString = null;
 		fd = new FileDialog();
 		fd.onSelect.add(onSelect);
-		fd.browse(FileDialogType.OPEN, filter, null, "Select a chart");
+		fd.browse(FileDialogType.OPEN, filter, null, title);
 		var checkTimer = new Timer(50);
 		var promise = new Promise<String>();
 		checkTimer.run = function()
@@ -140,6 +140,7 @@ class FNFAssets
 		}
 		fd.onCancel.add(function()
 		{
+			// sad promise hours
 			promise.error("user cancelled");
 			checkTimer.stop();
 		});
