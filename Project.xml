@@ -18,7 +18,8 @@
 
 	<!--HTML5-specific-->
 	<window if="html5" resizable="false" />
-
+	<haxedef if="electron" name="power-of-two"/>
+	<window if="electron" hardware="true"/>
 	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" />
 

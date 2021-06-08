@@ -5,6 +5,7 @@ import flixel.FlxSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.math.FlxMath;
 import flixel.util.FlxColor;
+import flixel.util.typeLimit.OneOfTwo;
 import lime.system.System;
 
 using StringTools;
@@ -17,6 +18,14 @@ import openfl.utils.ByteArray;
 import sys.FileSystem;
 import sys.io.File;
 #end
+
+enum abstract Direction(Int) from Int to Int
+{
+	var left;
+	var down;
+	var up;
+	var right;
+}
 
 class Note extends FlxSprite
 {
@@ -47,23 +56,47 @@ class Note extends FlxSprite
 
 	public var rating = "miss";
 	public var isLiftNote:Bool = false;
+	public var mineNote:Bool = false;
+	public var healMultiplier:Float = 1;
+	public var damageMultiplier:Float = 1;
+	// Whether to always do the same amount of healing for hitting and the same amount of damage for missing notes
+	public var consistentHealth:Bool = false;
+	// How relatively hard it is to hit the note. Lower numbers are harder, with 0 being literally impossible
+	public var timingMultiplier:Float = 1;
+	// whether to play the sing animation for hitting this note
+	public var shouldBeSung:Bool = true;
+	public var ignoreHealthMods:Bool = false;
 
-	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?LiftNote:Bool = false)
+	// altNote can be int or bool. int just determines what alt is played
+	// format: [strumTime:Float, noteDirection:Int, sustainLength:Float, altNote:Union<Bool, Int>, isLiftNote:Bool, healMultiplier:Float, damageMultipler:Float, consistentHealth:Bool, timingMultiplier:Float, shouldBeSung:Bool, ignoreHealthMods:Bool, animSuffix:Union<String, Int>]
+	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?customImage:Null<BitmapData>, ?customXml:Null<String>,
+			?customEnds:Null<BitmapData>, ?LiftNote:Bool = false, ?animSuffix:String, ?numSuffix:Int)
 	{
 		super();
-
+		// uh oh notedata sussy :flushed:
 		if (prevNote == null)
 			prevNote = this;
 
 		this.prevNote = prevNote;
 		isSustainNote = sustainNote;
 		isLiftNote = LiftNote;
+		if (isLiftNote)
+			shouldBeSung = false;
 		x += 50;
 		// MAKE SURE ITS DEFINITELY OFF SCREEN?
 		y -= 2000;
 		this.strumTime = strumTime;
 
-		this.noteData = noteData;
+		this.noteData = noteData % 4;
+		if (noteData >= 8 && noteData < 16)
+		{
+			mineNote = true;
+		}
+		if (noteData >= 16 && noteData < 24)
+		{
+			isLiftNote = true;
+		}
+		// var daStage:String = PlayState.curStage;
 		frames = FlxAtlasFrames.fromSparrow('assets/images/NOTE_assets.png', 'assets/images/NOTE_assets.xml');
 
 		animation.addByPrefix('greenScroll', 'green0');
@@ -80,7 +113,6 @@ class Note extends FlxSprite
 		animation.addByPrefix('greenhold', 'green hold piece');
 		animation.addByPrefix('redhold', 'red hold piece');
 		animation.addByPrefix('bluehold', 'blue hold piece');
-
 		if (isLiftNote)
 		{
 			animation.addByPrefix('greenScroll', 'green lift');
@@ -92,7 +124,7 @@ class Note extends FlxSprite
 		updateHitbox();
 		antialiasing = true;
 
-		switch (noteData)
+		switch (noteData % 4)
 		{
 			case 0:
 				x += swagWidth * 0;
@@ -107,90 +139,5 @@ class Note extends FlxSprite
 				x += swagWidth * 3;
 				animation.play('redScroll');
 		}
-
-		if (isSustainNote && prevNote != null)
-		{
-			noteScore * 0.2;
-			alpha = 0.6;
-
-			x += width / 2;
-
-			switch (noteData)
-			{
-				case 2:
-					animation.play('greenholdend');
-				case 3:
-					animation.play('redholdend');
-				case 1:
-					animation.play('blueholdend');
-				case 0:
-					animation.play('purpleholdend');
-			}
-
-			updateHitbox();
-
-			x -= width / 2;
-
-			if (isPixel)
-				x += 30;
-
-			if (prevNote.isSustainNote)
-			{
-				switch (prevNote.noteData)
-				{
-					case 0:
-						prevNote.animation.play('purplehold');
-					case 1:
-						prevNote.animation.play('bluehold');
-					case 2:
-						prevNote.animation.play('greenhold');
-					case 3:
-						prevNote.animation.play('redhold');
-				}
-
-				// prevNote.scale.y *= Conductor.stepCrochet / 100 * 1.5 * PlayState.SONG.speed;
-				prevNote.updateHitbox();
-				// prevNote.setGraphicSize();
-			}
-		}
-	}
-
-	override function update(elapsed:Float)
-	{
-		super.update(elapsed);
-		// if we are player one and it's bf's note or we are duo mode or we are player two and it's p2's note
-		// and it isn't demo mode
-
-		// Don't do anything because this is a note editor?
-		/*
-			if ((((mustPress && !oppMode) || duoMode) || (oppMode && !mustPress)) && !funnyMode)
-			{
-				// The * 0.5 us so that its easier to hit them too late, instead of too early
-				if (strumTime > Conductor.songPosition - Judge.wayoffJudge && strumTime < Conductor.songPosition + Judge.wayoffJudge)
-				{
-					canBeHit = true;
-				}
-				else
-					canBeHit = false;
-
-				if (strumTime < Conductor.songPosition - Judge.wayoffJudge)
-					tooLate = true;
-			}
-			else
-			{
-				canBeHit = false;
-
-				if (strumTime <= Conductor.songPosition)
-				{
-					wasGoodHit = true;
-				}
-			}
-
-			if (tooLate)
-			{
-				if (alpha > 0.3)
-					alpha = 0.3;
-			}
-		 */
 	}
 }

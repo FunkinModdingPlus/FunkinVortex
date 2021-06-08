@@ -38,6 +38,7 @@ import haxe.ui.containers.menus.MenuItem;
 import haxe.ui.core.Component;
 import haxe.ui.events.MouseEvent;
 import haxe.ui.events.UIEvent;
+import haxe.ui.focus.FocusManager;
 import haxe.ui.macros.ComponentMacros;
 import haxe.ui.styles.Style;
 import openfl.media.Sound;
@@ -151,7 +152,9 @@ class PlayState extends FlxUIState
 		chart.add(strumLine);
 		chart.add(curRenderedNotes);
 		chart.add(curRenderedSus);
+		#if !electron
 		FlxG.mouse.useSystemCursor = true;
+		#end
 		// i think UIs in code get out of hand fast and i know others prefer it so.. - creator of the ui thing
 		menuBar = new MenuBar();
 		menuBar.customStyle.width = FlxG.width;
@@ -435,7 +438,6 @@ class PlayState extends FlxUIState
 		tabviewThingy.y = 100;
 		LINE_SPACING = Std.int(strumLine.height);
 		curSnap = LINE_SPACING * 4;
-		drawChartLines();
 		updateNotes();
 		camFollow = new FlxObject(strumLine.getGraphicMidpoint().x, strumLine.getGraphicMidpoint().y);
 		FlxG.camera.follow(camFollow, LOCKON);
@@ -456,7 +458,7 @@ class PlayState extends FlxUIState
 		Conductor.changeBPM(_song.bpm);
 		Conductor.mapBPMChanges(_song);
 		// addUI();
-		add(staffLines);
+		// add(staffLines);
 		add(strumLine);
 		add(curRenderedNotes);
 		add(curRenderedSus);
@@ -810,79 +812,87 @@ class PlayState extends FlxUIState
 			FlxG.keys.pressed.SEVEN,
 			FlxG.keys.pressed.EIGHT
 		];
-		if (FlxG.keys.justPressed.UP)
+		if (FocusManager.instance.focus == null)
 		{
-			moveStrumLine(-1);
-		}
-		else if (FlxG.keys.justPressed.DOWN)
-		{
-			moveStrumLine(1);
-		}
-		if (FlxG.keys.justPressed.E)
-		{
-			_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection = !_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection;
-			// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
-			updateNotes();
-		}
-		if (FlxG.keys.justPressed.Q)
-		{
-			useLiftNote = !useLiftNote;
-		}
-		if (FlxG.keys.justPressed.RIGHT)
-		{
-			changeSnap(true);
-		}
-		else if (FlxG.keys.justPressed.LEFT)
-		{
-			changeSnap(false);
-		}
-		if (FlxG.keys.justPressed.ESCAPE && curSelectedNote != null)
-		{
-			deselectNote();
-		}
-		if (FlxG.keys.justPressed.HOME)
-		{
-			strumLine.y = 0;
-			moveStrumLine(0);
-		}
-		/*
-			if (curSelectedNote != null)
+			if (FlxG.keys.justPressed.UP || FlxG.mouse.wheel > 0)
 			{
-				curSelectedNote[3] = Std.int(noteInfo.stepperAltNote.value);
-		}*/
-		if (FlxG.keys.justPressed.SPACE && FlxG.sound.music != null)
-		{
-			if (FlxG.sound.music.playing)
+				moveStrumLine(-1);
+			}
+			else if (FlxG.keys.justPressed.DOWN || FlxG.mouse.wheel < 0)
 			{
-				FlxG.sound.music.pause();
-				if (_song.needsVoices && vocalSound != null)
+				moveStrumLine(1);
+			}
+			if (FlxG.keys.justPressed.E)
+			{
+				_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection = !_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection;
+				// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
+				updateNotes();
+			}
+			if (FlxG.keys.justPressed.Q)
+			{
+				useLiftNote = !useLiftNote;
+			}
+			if (FlxG.keys.justPressed.RIGHT)
+			{
+				changeSnap(true);
+			}
+			else if (FlxG.keys.justPressed.LEFT)
+			{
+				changeSnap(false);
+			}
+			if (FlxG.keys.justPressed.ESCAPE && curSelectedNote != null)
+			{
+				deselectNote();
+			}
+			if (FlxG.keys.justPressed.HOME)
+			{
+				strumLine.y = 0;
+				moveStrumLine(0);
+			}
+			/*
+				if (curSelectedNote != null)
 				{
-					vocalSound.pause();
+					curSelectedNote[3] = Std.int(noteInfo.stepperAltNote.value);
+			}*/
+			if (FlxG.keys.justPressed.SPACE && FlxG.sound.music != null)
+			{
+				if (FlxG.sound.music.playing)
+				{
+					FlxG.sound.music.pause();
+					if (_song.needsVoices && vocalSound != null)
+					{
+						vocalSound.pause();
+					}
+				}
+				else
+				{
+					FlxG.sound.music.time = getSussyStrumTime(strumLine.y);
+					FlxG.sound.music.play();
+					if (_song.needsVoices && vocalSound != null)
+					{
+						vocalSound.play();
+					}
 				}
 			}
-			else
+			if (FlxG.sound.music != null && FlxG.sound.music.playing)
 			{
-				FlxG.sound.music.time = getSussyStrumTime(strumLine.y);
-				FlxG.sound.music.play();
-				if (_song.needsVoices && vocalSound != null)
+				strumLine.y = getSussyYPos(FlxG.sound.music.time);
+				curSectionTxt.text = 'Section: ' + getSussySectionFromY(strumLine.y);
+				// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
+				if (_song.needsVoices && vocalSound != null && !CoolUtil.nearlyEquals(vocalSound.time, FlxG.sound.music.time, 2))
 				{
-					vocalSound.play();
+					vocalSound.time = FlxG.sound.music.time;
 				}
 			}
 		}
-		if (FlxG.sound.music != null && FlxG.sound.music.playing)
+		else
 		{
-			strumLine.y = getSussyYPos(FlxG.sound.music.time);
-			curSectionTxt.text = 'Section: ' + getSussySectionFromY(strumLine.y);
-			// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
-			if (_song.needsVoices && vocalSound != null && !CoolUtil.nearlyEquals(vocalSound.time, FlxG.sound.music.time, 2))
-			{
-				vocalSound.time = FlxG.sound.music.time;
-			}
+			trace(FocusManager.instance.focus);
 		}
+
 		for (i in 0...noteControls.length)
 		{
-			if (!noteControls[i])
+			if (!noteControls[i] || FocusManager.instance.focus != null)
 				continue;
 			if (FlxG.keys.pressed.CONTROL)
 			{
@@ -908,7 +918,7 @@ class PlayState extends FlxUIState
 	{
 		strumLine.y += change * curSnap;
 		if (change != 0)
-			strumLine.y = Math.floor(strumLine.y / curSnap) * curSnap;
+			strumLine.y = Math.round(strumLine.y / curSnap) * curSnap;
 		curSectionTxt.text = 'Section: ' + getSussySectionFromY(strumLine.y);
 		// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
 		updateUI();
@@ -968,19 +978,25 @@ class PlayState extends FlxUIState
 
 	private function drawChartLines()
 	{
-		staffLines.makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.TRANSPARENT);
+		// staffLines.makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.TRANSPARENT);
 		for (i in 0..._song.notes.length)
 		{
 			for (o in 0..._song.notes[i].lengthInSteps)
 			{
-				var lineColor:FlxColor = FlxColor.GRAY;
+				/*
+					var lineColor:FlxColor = FlxColor.GRAY;
+					if (o == 0)
+					{
+						lineColor = FlxColor.WHITE;
+						sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
+					}
+					FlxSpriteUtil.drawLine(staffLines, FlxG.width * -0.5, LINE_SPACING * ((i * 16) + o), FlxG.width * 1.5, LINE_SPACING * ((i * 16) + o),
+						{color: lineColor, thickness: 5});
+				 */
 				if (o == 0)
 				{
-					lineColor = FlxColor.WHITE;
 					sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
 				}
-				FlxSpriteUtil.drawLine(staffLines, FlxG.width * -0.5, LINE_SPACING * ((i * 16) + o), FlxG.width * 1.5, LINE_SPACING * ((i * 16) + o),
-					{color: lineColor, thickness: 5});
 				lastLineY = LINE_SPACING * ((i * 16) + o);
 			}
 		}
@@ -1044,6 +1060,12 @@ class PlayState extends FlxUIState
 				sussyInfo = noteData + 4;
 			}
 			noteData = sussyInfo;
+		}
+		if (useLiftNote)
+		{
+			// :)
+			// prefer overloading
+			noteData += 16;
 		}
 		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, useLiftNote];
 		for (note in _song.notes[curSection].sectionNotes)
@@ -1156,6 +1178,7 @@ class PlayState extends FlxUIState
 
 	private function updateNotes()
 	{
+		drawChartLines();
 		while (curRenderedNotes.members.length > 0)
 		{
 			curRenderedNotes.remove(curRenderedNotes.members[0], true);
@@ -1183,21 +1206,21 @@ class PlayState extends FlxUIState
 				var daStrumTime = i[0];
 				var daSus = i[2];
 				var daLift = i[4];
-				var note = new Note(daStrumTime, daNoteInfo % 4, null, false, daLift);
+				var note = new Note(daStrumTime, daNoteInfo, null, false, daLift);
 				note.sustainLength = daSus;
 				note.setGraphicSize(Std.int(strumLine.members[0].width));
 				note.updateHitbox();
-				note.x = strumLine.members[daNoteInfo].x;
+				note.x = strumLine.members[daNoteInfo % 8].x;
 				if (_song.notes[j].mustHitSection)
 				{
 					var sussyInfo = 0;
-					if (daNoteInfo > 3)
+					if (daNoteInfo % 8 > 3)
 					{
-						sussyInfo = daNoteInfo % 4;
+						sussyInfo = daNoteInfo % 8 - 4;
 					}
 					else
 					{
-						sussyInfo = daNoteInfo + 4;
+						sussyInfo = daNoteInfo % 8 + 4;
 					}
 					note.x = strumLine.members[sussyInfo].x;
 				}
@@ -1212,7 +1235,6 @@ class PlayState extends FlxUIState
 				}
 			}
 		}
-		drawChartLines();
 	}
 
 	private function getYfromStrum(strumTime:Float, section:Int):Float
