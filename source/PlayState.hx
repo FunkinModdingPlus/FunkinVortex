@@ -62,6 +62,15 @@ enum abstract Snaps(Int) from Int to Int
 	@:op(A == B) static function _(_, _):Bool;
 }
 
+enum abstract NoteTypes(Int) from Int to Int
+{
+	@:op(A == B) static function _(_, _):Bool;
+
+	var Normal;
+	var Lift;
+	var Mine;
+}
+
 // By default sections come in steps of 16.
 // i should be using tab menu... oh well
 // we don't have to worry about backspaces ^-^
@@ -76,7 +85,7 @@ class PlayState extends FlxUIState
 	var curRenderedSus:FlxSpriteGroup;
 	var snaptext:FlxText;
 	var curSnap:Float = 0;
-
+	var curKeyType:NoteTypes = Normal;
 	// var ui_box:FlxUITabMenu;
 	// var haxeUIOpen:Button;
 	// var openButton:FlxButton;
@@ -115,6 +124,7 @@ class PlayState extends FlxUIState
 	static var vocalSound:FlxSound;
 
 	var snapInfo:Snaps = Four;
+	var noteTypeText:FlxText;
 
 	override public function create()
 	{
@@ -452,6 +462,8 @@ class PlayState extends FlxUIState
 		// don't immediately set text to '' because height??
 		toolInfo.y -= toolInfo.height;
 		toolInfo.text = 'hover over things to see what they do';
+		noteTypeText = new FlxText(FlxG.width / 2, toolInfo.y, 0, "Normal Type", 16);
+		noteTypeText.scrollFactor.set();
 		// NOT PIXEL PERFECT
 		toolInfo.scrollFactor.set();
 		tempBpm = _song.bpm;
@@ -471,7 +483,7 @@ class PlayState extends FlxUIState
 		// add(saveButton);
 		// add(loadVocalsButton);
 		// add(loadInstButton);
-		add(toolInfo);
+		// add(toolInfo);
 		// add(ui_box);
 		add(tabviewThingy);
 		// add(haxeUIOpen);
@@ -830,7 +842,17 @@ class PlayState extends FlxUIState
 			}
 			if (FlxG.keys.justPressed.Q)
 			{
-				useLiftNote = !useLiftNote;
+				curKeyType += 1;
+				curKeyType = cast FlxMath.wrap(curKeyType, 0, cast Mine);
+				switch (curKeyType)
+				{
+					case Normal:
+						noteTypeText.text = "Normal Note";
+					case Lift:
+						noteTypeText.text = "Lift Note";
+					case Mine:
+						noteTypeText.text = "Mine Note";
+				}
 			}
 			if (FlxG.keys.justPressed.RIGHT)
 			{
@@ -1061,13 +1083,18 @@ class PlayState extends FlxUIState
 			}
 			noteData = sussyInfo;
 		}
-		if (useLiftNote)
+		if (curKeyType == Lift)
 		{
 			// :)
 			// prefer overloading
 			noteData += 16;
 		}
-		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, useLiftNote];
+		else if (curKeyType == Mine)
+		{
+			noteData += 8;
+		}
+		// prefer overloading : )
+		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, curKeyType == Lift];
 		for (note in _song.notes[curSection].sectionNotes)
 		{
 			if (CoolUtil.truncateFloat(note[0], 1) == CoolUtil.truncateFloat(goodArray[0], 1) && note[1] == noteData)
@@ -1077,7 +1104,7 @@ class PlayState extends FlxUIState
 				return;
 			}
 		}
-		_song.notes[curSection].sectionNotes.push([noteStrum, noteData, noteSus, false, useLiftNote]);
+		_song.notes[curSection].sectionNotes.push([noteStrum, noteData, noteSus, false, curKeyType == Lift]);
 
 		updateNotes();
 	}
@@ -1159,7 +1186,7 @@ class PlayState extends FlxUIState
 			}
 			noteData = sussyInfo;
 		}
-		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, useLiftNote];
+		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false];
 
 		for (note in _song.notes[curSection].sectionNotes)
 		{

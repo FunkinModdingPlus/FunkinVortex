@@ -120,6 +120,10 @@ class Note extends FlxSprite
 			animation.addByPrefix('blueScroll', 'blue lift');
 			animation.addByPrefix('purpleScroll', 'purple lift');
 		}
+		if (mineNote)
+		{
+			color = FlxColor.GRAY;
+		}
 		setGraphicSize(Std.int(width * 0.7));
 		updateHitbox();
 		antialiasing = true;
