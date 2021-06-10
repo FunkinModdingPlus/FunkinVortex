@@ -33,6 +33,7 @@ typedef SwagSong =
 	var isHey:Null<Bool>;
 	var isCheer:Null<Bool>;
 	var preferredNoteAmount:Null<Int>;
+	var forceJudgements:Null<Bool>;
 }
 
 class Song
@@ -118,6 +119,8 @@ class Song
 				parsedJson.stage = 'stage';
 			}
 		}
+		if (parsedJson.forceJudgements == null)
+			parsedJson.forceJudgements = false;
 		if (parsedJson.preferredNoteAmount == null)
 			parsedJson.preferredNoteAmount = 4;
 		if (parsedJson.isHey == null)

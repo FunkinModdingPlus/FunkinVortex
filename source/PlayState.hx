@@ -149,7 +149,8 @@ class PlayState extends FlxUIState
 				cutsceneType: "none",
 				uiType: 'normal',
 				isCheer: false,
-				preferredNoteAmount: 4
+				preferredNoteAmount: 4,
+				forceJudgements: false
 			};
 		// make it ridulously big
 		staffLines = new FlxSprite().makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.BLACK);
@@ -235,6 +236,8 @@ class PlayState extends FlxUIState
 			Reflect.deleteField(sussySong, "cutsceneType");
 			Reflect.deleteField(sussySong, "isHey");
 			Reflect.deleteField(sussySong, "isCheer");
+			Reflect.deleteField(sussySong, "forceJudgements");
+			Reflect.deleteField(sussySong, "preferredNoteAmount");
 			for (i in 0...sussySong.notes.length)
 			{
 				for (j in 0...sussySong.notes[i].sectionNotes.length)
@@ -308,6 +311,11 @@ class PlayState extends FlxUIState
 			_song.isCheer = tabviewThingy.findComponent("ischeer", CheckBox).selected;
 		};
 		tabviewThingy.findComponent("ischeer", CheckBox).selected = _song.isCheer;
+		tabviewThingy.findComponent("forceJudgements", CheckBox).onChange = function(e:UIEvent)
+		{
+			_song.forceJudgements = tabviewThingy.findComponent("forceJudgements", CheckBox).selected;
+		};
+		tabviewThingy.findComponent("forceJudgements", CheckBox).selected = _song.forceJudgements;
 		tabviewThingy.findComponent("swapsection", Button).onClick = function(_)
 		{
 			var curSection = getSussySectionFromY(strumLine.y);
@@ -480,6 +488,7 @@ class PlayState extends FlxUIState
 		// add(openButton);
 
 		add(menuBar);
+		add(noteTypeText);
 		// add(saveButton);
 		// add(loadVocalsButton);
 		// add(loadInstButton);
