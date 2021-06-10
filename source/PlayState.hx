@@ -860,7 +860,7 @@ class PlayState extends FlxUIState
 			if (FlxG.keys.justPressed.Q)
 			{
 				curKeyType += 1;
-				curKeyType = cast FlxMath.wrap(curKeyType, 0, cast Mine);
+				curKeyType = cast FlxMath.wrap(curKeyType, 0, cast Death);
 				switch (curKeyType)
 				{
 					case Normal:
@@ -1102,15 +1102,16 @@ class PlayState extends FlxUIState
 			}
 			noteData = sussyInfo;
 		}
-		if (curKeyType == Lift)
+		switch (curKeyType)
 		{
-			// :)
-			// prefer overloading
-			noteData += 16;
-		}
-		else if (curKeyType == Mine)
-		{
-			noteData += 8;
+			case Lift:
+				noteData += 16;
+			case Mine:
+				noteData += 8;
+			case Death:
+				noteData += 24;
+			case Normal:
+				// no
 		}
 		// prefer overloading : )
 		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, curKeyType == Lift];
