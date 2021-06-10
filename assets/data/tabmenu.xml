@@ -49,6 +49,7 @@
         <textfield placeholder="Test" id="songTitle" style="font-size: 11px;"/>
         <checkbox text="Needs Voices" id="needsVoices"/>
         <checkbox text="Always use Judgements" id="forceJudgements"/>
+        <checkbox text="Convert Mines to Nukes" id="convertMines"/>
         <checkbox text="Mute Inst in Editor" id="muteInst"/>
         <checkbox text="Is Spooky (thorns dad trail)" id="isspooky"/>
         <checkbox text="Is Moody (Roses Fangirls)" id="ismoody"/>

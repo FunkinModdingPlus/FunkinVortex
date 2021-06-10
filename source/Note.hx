@@ -53,6 +53,7 @@ class Note extends FlxSprite
 	public static var GREEN_NOTE:Int = 2;
 	public static var BLUE_NOTE:Int = 1;
 	public static var RED_NOTE:Int = 3;
+	public static var NOTE_AMOUNT:Int = 4;
 
 	public var rating = "miss";
 	public var isLiftNote:Bool = false;
@@ -66,6 +67,8 @@ class Note extends FlxSprite
 	// whether to play the sing animation for hitting this note
 	public var shouldBeSung:Bool = true;
 	public var ignoreHealthMods:Bool = false;
+	public var nukeNote = false;
+	public var drainNote = false;
 
 	// altNote can be int or bool. int just determines what alt is played
 	// format: [strumTime:Float, noteDirection:Int, sustainLength:Float, altNote:Union<Bool, Int>, isLiftNote:Bool, healMultiplier:Float, damageMultipler:Float, consistentHealth:Bool, timingMultiplier:Float, shouldBeSung:Bool, ignoreHealthMods:Bool, animSuffix:Union<String, Int>]
@@ -88,13 +91,22 @@ class Note extends FlxSprite
 		this.strumTime = strumTime;
 
 		this.noteData = noteData % 4;
-		if (noteData >= 8 && noteData < 16)
+		if (noteData >= NOTE_AMOUNT * 2 && noteData < NOTE_AMOUNT * 4)
 		{
 			mineNote = true;
 		}
-		if (noteData >= 16 && noteData < 24)
+		if (noteData >= NOTE_AMOUNT * 4 && noteData < NOTE_AMOUNT * 6)
 		{
 			isLiftNote = true;
+		}
+		// die : )
+		if (noteData >= NOTE_AMOUNT * 6 && noteData < NOTE_AMOUNT * 8)
+		{
+			nukeNote = true;
+		}
+		if (noteData >= NOTE_AMOUNT * 8 && noteData < NOTE_AMOUNT * 10)
+		{
+			drainNote = true;
 		}
 		// var daStage:String = PlayState.curStage;
 		frames = FlxAtlasFrames.fromSparrow('assets/images/NOTE_assets.png', 'assets/images/NOTE_assets.xml');
@@ -119,6 +131,13 @@ class Note extends FlxSprite
 			animation.addByPrefix('redScroll', 'red lift');
 			animation.addByPrefix('blueScroll', 'blue lift');
 			animation.addByPrefix('purpleScroll', 'purple lift');
+		}
+		if (nukeNote)
+		{
+			animation.addByPrefix('greenScroll', 'green nuke');
+			animation.addByPrefix('redScroll', 'red nuke');
+			animation.addByPrefix('blueScroll', 'blue nuke');
+			animation.addByPrefix('purpleScroll', 'purple nuke');
 		}
 		if (mineNote)
 		{

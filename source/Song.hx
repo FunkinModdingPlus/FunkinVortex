@@ -34,6 +34,8 @@ typedef SwagSong =
 	var isCheer:Null<Bool>;
 	var preferredNoteAmount:Null<Int>;
 	var forceJudgements:Null<Bool>;
+	var convertMineToNuke:Null<Bool>;
+	var mania:Null<Int>;
 }
 
 class Song
@@ -122,7 +124,31 @@ class Song
 		if (parsedJson.forceJudgements == null)
 			parsedJson.forceJudgements = false;
 		if (parsedJson.preferredNoteAmount == null)
-			parsedJson.preferredNoteAmount = 4;
+		{
+			switch (parsedJson.mania)
+			{
+				case 1:
+					parsedJson.preferredNoteAmount = 6;
+				case 2:
+					parsedJson.preferredNoteAmount = 9;
+				default:
+					parsedJson.preferredNoteAmount = 4;
+			}
+		}
+		if (parsedJson.mania == null)
+		{
+			switch (parsedJson.preferredNoteAmount)
+			{
+				case 4:
+					parsedJson.mania = 0;
+				case 6:
+					parsedJson.mania = 1;
+				case 9:
+					parsedJson.mania = 2;
+				default:
+					parsedJson.mania = 0;
+			}
+		}
 		if (parsedJson.isHey == null)
 		{
 			parsedJson.isHey = false;

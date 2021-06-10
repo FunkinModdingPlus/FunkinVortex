@@ -69,6 +69,7 @@ enum abstract NoteTypes(Int) from Int to Int
 	var Normal;
 	var Lift;
 	var Mine;
+	var Death;
 }
 
 // By default sections come in steps of 16.
@@ -150,7 +151,9 @@ class PlayState extends FlxUIState
 				uiType: 'normal',
 				isCheer: false,
 				preferredNoteAmount: 4,
-				forceJudgements: false
+				forceJudgements: false,
+				convertMineToNuke: false,
+				mania: 0
 			};
 		// make it ridulously big
 		staffLines = new FlxSprite().makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.BLACK);
@@ -316,6 +319,11 @@ class PlayState extends FlxUIState
 			_song.forceJudgements = tabviewThingy.findComponent("forceJudgements", CheckBox).selected;
 		};
 		tabviewThingy.findComponent("forceJudgements", CheckBox).selected = _song.forceJudgements;
+		tabviewThingy.findComponent("convertMines", CheckBox).onChange = function(e:UIEvent)
+		{
+			_song.convertMineToNuke = tabviewThingy.findComponent("convertMines", CheckBox).selected;
+		};
+		tabviewThingy.findComponent("convertMines", CheckBox).selected = _song.convertMineToNuke;
 		tabviewThingy.findComponent("swapsection", Button).onClick = function(_)
 		{
 			var curSection = getSussySectionFromY(strumLine.y);
@@ -861,6 +869,8 @@ class PlayState extends FlxUIState
 						noteTypeText.text = "Lift Note";
 					case Mine:
 						noteTypeText.text = "Mine Note";
+					case Death:
+						noteTypeText.text = "Death Note";
 				}
 			}
 			if (FlxG.keys.justPressed.RIGHT)
