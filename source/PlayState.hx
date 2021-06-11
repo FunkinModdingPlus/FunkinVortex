@@ -86,7 +86,7 @@ class PlayState extends FlxUIState
 	var curRenderedSus:FlxSpriteGroup;
 	var snaptext:FlxText;
 	var curSnap:Float = 0;
-	var curKeyType:NoteTypes = Normal;
+	var curKeyType:Int = Normal;
 	// var ui_box:FlxUITabMenu;
 	// var haxeUIOpen:Button;
 	// var openButton:FlxButton;
@@ -851,7 +851,7 @@ class PlayState extends FlxUIState
 			{
 				moveStrumLine(1);
 			}
-			if (FlxG.keys.justPressed.E)
+			if (FlxG.keys.justPressed.S)
 			{
 				_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection = !_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection;
 				// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
@@ -859,8 +859,8 @@ class PlayState extends FlxUIState
 			}
 			if (FlxG.keys.justPressed.Q)
 			{
-				curKeyType += 1;
-				curKeyType = cast FlxMath.wrap(curKeyType, 0, cast Death);
+				curKeyType -= 1;
+				curKeyType = cast FlxMath.wrap(curKeyType, 0, 99);
 				switch (curKeyType)
 				{
 					case Normal:
@@ -871,6 +871,32 @@ class PlayState extends FlxUIState
 						noteTypeText.text = "Mine Note";
 					case Death:
 						noteTypeText.text = "Death Note";
+					case 4:
+						// drain
+						noteTypeText.text = "Drain Note";
+					default:
+						noteTypeText.text = 'Custom Note ${curKeyType - 4}';
+				}
+			}
+			else if (FlxG.keys.justPressed.E)
+			{
+				curKeyType += 1;
+				curKeyType = cast FlxMath.wrap(curKeyType, 0, 99);
+				switch (curKeyType)
+				{
+					case Normal:
+						noteTypeText.text = "Normal Note";
+					case Lift:
+						noteTypeText.text = "Lift Note";
+					case Mine:
+						noteTypeText.text = "Mine Note";
+					case Death:
+						noteTypeText.text = "Death Note";
+					case 4:
+						// drain
+						noteTypeText.text = "Drain Note";
+					default:
+						noteTypeText.text = 'Custom Note ${curKeyType - 4}';
 				}
 			}
 			if (FlxG.keys.justPressed.RIGHT)
@@ -1111,7 +1137,11 @@ class PlayState extends FlxUIState
 			case Death:
 				noteData += 24;
 			case Normal:
-				// no
+			// no
+			case 4:
+				noteData += 32;
+			case key:
+				noteData += 8 * key;
 		}
 		// prefer overloading : )
 		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, curKeyType == Lift];
