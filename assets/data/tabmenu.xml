@@ -33,12 +33,15 @@
     </vbox>
     <vbox text="Section Info">
         <label style="font-size: 11px;" text="Section Length"/>
-        <number-stepper step="4" max="999" id="sectionlength" style="font-size: 11px;"/>
+        <number-stepper step="4" id="sectionlength" style="font-size: 11px;"/>
         <label style="font-size: 11px;" text="Section Bpm"/>
-        <number-stepper max="999" id="sectionbpm" style="font-size: 11px;"/>
+        <number-stepper id="sectionbpm" style="font-size: 11px;"/>
         <label style="font-size: 11px;" text="Alt Anim Num"/>
         <number-stepper max="999" id="altsection" style="font-size: 11px;"/>
         <button id="swapsection" text="Swap Section" />
+        <label style="font-size: 11px;" text="Copy Section Num"/>
+        <number-stepper id="copyid" style="font-size: 11px;"/>
+        <button id="copysection" text="Copy Section"/>
         <checkbox text="Must hit section" id="musthitsection"/>
         <checkbox text="Change BPM" id="changebpmsection"/>
         <button text="Add Section" id="addsection"/>

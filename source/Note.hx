@@ -4,6 +4,7 @@ import flash.display.BitmapData;
 import flixel.FlxSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.math.FlxMath;
+import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.typeLimit.OneOfTwo;
 import lime.system.System;
@@ -18,7 +19,7 @@ import openfl.utils.ByteArray;
 import sys.FileSystem;
 import sys.io.File;
 #end
-
+import flixel.graphics.FlxGraphic;
 enum abstract Direction(Int) from Int to Int
 {
 	var left;
@@ -91,6 +92,7 @@ class Note extends FlxSprite
 		this.strumTime = strumTime;
 
 		this.noteData = noteData % 4;
+		var sussy:Bool = false;
 		if (noteData >= NOTE_AMOUNT * 2 && noteData < NOTE_AMOUNT * 4)
 		{
 			mineNote = true;
@@ -108,9 +110,17 @@ class Note extends FlxSprite
 		{
 			drainNote = true;
 		}
+		if (noteData >= NOTE_AMOUNT * 10) {
+			sussy = true;
+		}
+
 		// var daStage:String = PlayState.curStage;
 		frames = FlxAtlasFrames.fromSparrow('assets/images/NOTE_assets.png', 'assets/images/NOTE_assets.xml');
-
+		if (sussy) {
+			// we need to load a unique instance
+			var gwapchic = FlxGraphic.fromAssetKey('assets/images/NOTE_assets.png', true);
+			frames = FlxAtlasFrames.fromSparrow(gwapchic, 'assets/images/NOTE_assets.xml');
+		}
 		animation.addByPrefix('greenScroll', 'green0');
 		animation.addByPrefix('redScroll', 'red0');
 		animation.addByPrefix('blueScroll', 'blue0');
@@ -143,6 +153,7 @@ class Note extends FlxSprite
 		{
 			color = FlxColor.GRAY;
 		}
+		
 		setGraphicSize(Std.int(width * 0.7));
 		updateHitbox();
 		antialiasing = true;
@@ -161,6 +172,13 @@ class Note extends FlxSprite
 			case 3:
 				x += swagWidth * 3;
 				animation.play('redScroll');
+		}
+		if (noteData >= NOTE_AMOUNT * 10)
+		{
+			var sussyInfo = Math.floor(noteData / (NOTE_AMOUNT * 2));
+			sussyInfo -= 4;
+			var text = new FlxText(0, 0, 0, cast sussyInfo, 32);
+			stamp(text, 0, 0);
 		}
 	}
 }
