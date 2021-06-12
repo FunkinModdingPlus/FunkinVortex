@@ -1147,9 +1147,15 @@ class PlayState extends FlxUIState
 		var goodArray:Array<Dynamic> = [noteStrum, noteData, noteSus, false, curKeyType == Lift];
 		for (note in _song.notes[curSection].sectionNotes)
 		{
-			if (CoolUtil.truncateFloat(note[0], 1) == CoolUtil.truncateFloat(goodArray[0], 1) && note[1] == noteData)
+			if (CoolUtil.truncateFloat(note[0], 1) == CoolUtil.truncateFloat(goodArray[0], 1) && note[1] % 8 == noteData % 8)
 			{
 				_song.notes[curSection].sectionNotes.remove(note);
+				// if it was not the same type
+				// we replace it instead of outright deleting it
+				if (note[1] != noteData)
+				{
+					break;
+				}
 				updateNotes();
 				return;
 			}

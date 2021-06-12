@@ -2,6 +2,7 @@ package;
 
 import flash.display.BitmapData;
 import flixel.FlxSprite;
+import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
@@ -19,7 +20,7 @@ import openfl.utils.ByteArray;
 import sys.FileSystem;
 import sys.io.File;
 #end
-import flixel.graphics.FlxGraphic;
+
 enum abstract Direction(Int) from Int to Int
 {
 	var left;
@@ -71,6 +72,8 @@ class Note extends FlxSprite
 	public var nukeNote = false;
 	public var drainNote = false;
 
+	static var coolCustomGraphics:Array<FlxGraphic> = [];
+
 	// altNote can be int or bool. int just determines what alt is played
 	// format: [strumTime:Float, noteDirection:Int, sustainLength:Float, altNote:Union<Bool, Int>, isLiftNote:Bool, healMultiplier:Float, damageMultipler:Float, consistentHealth:Bool, timingMultiplier:Float, shouldBeSung:Bool, ignoreHealthMods:Bool, animSuffix:Union<String, Int>]
 	public function new(strumTime:Float, noteData:Int, ?prevNote:Note, ?sustainNote:Bool = false, ?customImage:Null<BitmapData>, ?customXml:Null<String>,
@@ -110,16 +113,22 @@ class Note extends FlxSprite
 		{
 			drainNote = true;
 		}
-		if (noteData >= NOTE_AMOUNT * 10) {
+		if (noteData >= NOTE_AMOUNT * 10)
+		{
 			sussy = true;
 		}
 
 		// var daStage:String = PlayState.curStage;
 		frames = FlxAtlasFrames.fromSparrow('assets/images/NOTE_assets.png', 'assets/images/NOTE_assets.xml');
-		if (sussy) {
+		if (sussy)
+		{
 			// we need to load a unique instance
-			var gwapchic = FlxGraphic.fromAssetKey('assets/images/NOTE_assets.png', true);
-			frames = FlxAtlasFrames.fromSparrow(gwapchic, 'assets/images/NOTE_assets.xml');
+			// we only need 1 unique instance per number so we do save the graphics
+			var sussyInfo = Math.floor(noteData / (NOTE_AMOUNT * 2)) - 5;
+			if (coolCustomGraphics[sussyInfo] == null)
+				coolCustomGraphics[sussyInfo] = FlxGraphic.fromAssetKey('assets/images/NOTE_assets.png', true);
+
+			frames = FlxAtlasFrames.fromSparrow(coolCustomGraphics[sussyInfo], 'assets/images/NOTE_assets.xml');
 		}
 		animation.addByPrefix('greenScroll', 'green0');
 		animation.addByPrefix('redScroll', 'red0');
@@ -153,7 +162,7 @@ class Note extends FlxSprite
 		{
 			color = FlxColor.GRAY;
 		}
-		
+
 		setGraphicSize(Std.int(width * 0.7));
 		updateHitbox();
 		antialiasing = true;
