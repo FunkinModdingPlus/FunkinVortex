@@ -82,7 +82,7 @@ class PlayState extends FlxUIState
 	var chart:FlxSpriteGroup;
 	var staffLines:FlxSprite;
 	var strumLine:FlxSpriteGroup;
-	var curRenderedNotes:FlxSpriteGroup;
+	var curRenderedNotes:FlxTypedSpriteGroup<Note>;
 	var curRenderedSus:FlxSpriteGroup;
 	var snaptext:FlxText;
 	var curSnap:Float = 0;
@@ -111,7 +111,7 @@ class PlayState extends FlxUIState
 	var noteRelease:Array<Bool> = [false, false, false, false, false, false, false, false];
 	var noteHold:Array<Bool> = [false, false, false, false, false, false, false, false];
 	var curSectionTxt:FlxText;
-
+	var selectBox:FlxSprite;
 	// var player1TextField:FlxUIInputText;
 	// var enemyTextField:FlxUIInputText;
 	// var gfTextField:FlxUIInputText;
@@ -131,7 +131,7 @@ class PlayState extends FlxUIState
 	{
 		super.create();
 		strumLine = new FlxSpriteGroup(0, 0);
-		curRenderedNotes = new FlxSpriteGroup();
+		curRenderedNotes = new FlxTypedSpriteGroup<Note>();
 		curRenderedSus = new FlxSpriteGroup();
 		if (_song == null)
 			_song = {
@@ -485,6 +485,9 @@ class PlayState extends FlxUIState
 		tempBpm = _song.bpm;
 		Conductor.changeBPM(_song.bpm);
 		Conductor.mapBPMChanges(_song);
+		selectBox = new FlxSprite().makeGraphic(1, 1, FlxColor.GRAY);
+		selectBox.visible = false;
+		selectBox.scrollFactor.set();
 		// addUI();
 		// add(staffLines);
 		add(strumLine);
@@ -503,6 +506,7 @@ class PlayState extends FlxUIState
 		// add(toolInfo);
 		// add(ui_box);
 		add(tabviewThingy);
+		add(selectBox);
 		// add(haxeUIOpen);
 	}
 
@@ -807,6 +811,8 @@ class PlayState extends FlxUIState
 		});
 	}
 
+	var selecting:Bool = false;
+
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -915,6 +921,91 @@ class PlayState extends FlxUIState
 			{
 				strumLine.y = 0;
 				moveStrumLine(0);
+			}
+			/*
+				if (FlxG.keys.pressed.SHIFT && FlxG.mouse.justPressed)
+				{
+					selecting = true;
+					selectBox.x = FlxG.mouse.screenX;
+					selectBox.y = FlxG.mouse.screenY;
+					selectBox.scale.x = 1;
+					selectBox.scale.y = 1;
+					selectBox.visible = true;
+				}
+				if (FlxG.mouse.justReleased && selecting)
+				{
+					selecting = false;
+					selectBox.visible = false;
+				}
+
+				if (selecting)
+				{
+					selectBox.scale.x = selectBox.x - FlxG.mouse.screenX;
+					selectBox.scale.y = selectBox.y - FlxG.mouse.screenY;
+					selectBox.offset.x = (selectBox.x - FlxG.mouse.screenX) / 2;
+					selectBox.offset.y = (selectBox.y - FlxG.mouse.screenY) / 2;
+				}
+			 */
+
+			if (FlxG.keys.pressed.SHIFT && FlxG.mouse.justPressed)
+			{
+				if (FlxG.mouse.overlaps(curRenderedNotes))
+				{
+					for (note in curRenderedNotes.members)
+					{
+						if (FlxG.mouse.overlaps(note))
+						{
+							strumLine.y = note.y;
+							var goodSection = getSussySectionFromY(strumLine.y);
+							var noteData = note.noteData;
+							if (_song.notes[goodSection].mustHitSection)
+							{
+								var sussyInfo = 0;
+								if (noteData > 3)
+								{
+									sussyInfo = noteData % 4;
+								}
+								else
+								{
+									sussyInfo = noteData + 4;
+								}
+								noteData = sussyInfo;
+							}
+							selectNote(noteData);
+							break;
+						}
+					}
+				}
+			}
+			if (FlxG.keys.pressed.CONTROL && FlxG.mouse.justPressed)
+			{
+				if (FlxG.mouse.overlaps(curRenderedNotes))
+				{
+					for (note in curRenderedNotes.members)
+					{
+						if (FlxG.mouse.overlaps(note))
+						{
+							strumLine.y = note.y;
+							var goodSection = getSussySectionFromY(strumLine.y);
+							var noteData = note.noteData;
+							if (_song.notes[goodSection].mustHitSection)
+							{
+								var sussyInfo = 0;
+								if (noteData > 3)
+								{
+									sussyInfo = noteData % 4;
+								}
+								else
+								{
+									sussyInfo = noteData + 4;
+								}
+								noteData = sussyInfo;
+							}
+							addNote(noteData);
+							break;
+						}
+					}
+				}
 			}
 			/*
 				if (curSelectedNote != null)

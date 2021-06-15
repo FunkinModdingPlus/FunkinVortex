@@ -94,7 +94,7 @@ class Note extends FlxSprite
 		y -= 2000;
 		this.strumTime = strumTime;
 
-		this.noteData = noteData % 4;
+		this.noteData = noteData % 8;
 		var sussy:Bool = false;
 		if (noteData >= NOTE_AMOUNT * 2 && noteData < NOTE_AMOUNT * 4)
 		{
