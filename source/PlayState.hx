@@ -176,13 +176,13 @@ class PlayState extends FlxUIState
 		fileMenu.text = "File";
 		var saveChartMenu = new MenuItem();
 		saveChartMenu.text = "Save Chart";
+		// HEY UM SNIFF IS ACTUALLY LIKE A PROGRAM SILVAGUNNER USES SOOO
 		saveChartMenu.onClick = function(e:MouseEvent)
 		{
 			updateTextParams();
 			var json = {
 				"song": _song,
-				"generatedBy": "ModdingPlus",
-				"programUsed": "FunkinVortex"
+				"generatedBy": "FunkinVortexM+"
 			};
 			var data = Json.stringify(json);
 			if ((data != null) && (data.length > 0))
@@ -260,8 +260,7 @@ class PlayState extends FlxUIState
 			}
 			var json = {
 				"song": sussySong,
-				"generatedBy": "SNIFF ver.6",
-				"programUsed": "FunkinVortex"
+				"generatedBy": "FunkinVortexExport"
 			};
 			var data = Json.stringify(json);
 			if ((data != null) && (data.length > 0))
