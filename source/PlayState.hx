@@ -336,6 +336,10 @@ class PlayState extends FlxUIState
 			}
 			updateNotes();
 		};
+		tabviewThingy.findComponent("copysection", Button).onClick = function(_)
+		{
+			copySection(Std.int(tabviewThingy.findComponent("copyid", NumberStepper).pos));
+		};
 		tabviewThingy.findComponent("addsection", Button).onClick = function(_)
 		{
 			addSection();
@@ -808,6 +812,21 @@ class PlayState extends FlxUIState
 			_song = Song.loadFromJson(s);
 			FlxG.resetState();
 		});
+	}
+
+	function copySection(?sectionNum:Int = 1)
+	{
+		var curSection = getSussySectionFromY(strumLine.y);
+		var daSec = FlxMath.maxInt(curSection, sectionNum);
+		for (note in _song.notes[daSec - sectionNum].sectionNotes)
+		{
+			var strum = note[0] + Conductor.stepCrochet * (_song.notes[daSec].lengthInSteps * sectionNum);
+
+			var copiedNote:Array<Dynamic> = [strum, note[1], note[2]];
+			_song.notes[daSec].sectionNotes.push(copiedNote);
+		}
+
+		updateNotes();
 	}
 
 	var selecting:Bool = false;
