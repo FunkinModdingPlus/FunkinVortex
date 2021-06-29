@@ -98,6 +98,7 @@ class PlayState extends FlxUIState
 	// var noteTabBtn:FlxButton;
 	var menuBar:MenuBar;
 	var curSelectedNote:Array<Dynamic>;
+	var curHoldSelect:Array<Dynamic>;
 	var GRID_SIZE = 40;
 	var tabviewThingy:Component;
 	var LINE_SPACING = 40;
@@ -545,163 +546,6 @@ class PlayState extends FlxUIState
 		}
 	}
 
-	/*
-		var stepperLength:FlxUINumericStepper;
-		var stepperAltAnim:FlxUINumericStepper;
-		var check_mustHitSection:FlxUICheckBox;
-		var check_changeBPM:FlxUICheckBox;
-		var stepperSectionBPM:FlxUINumericStepper;
-		var stepperAltNote:FlxUINumericStepper;
-
-		/*
-			function addUI()
-			{
-				var songTitle = new FlxUIInputText(10, 10, 70, _song.song, 8);
-
-				var check_voices = new FlxUICheckBox(10, 25, null, null, "Has Voices", 100);
-				check_voices.checked = _song.needsVoices;
-				check_voices.callback = function()
-				{
-					_song.needsVoices = check_voices.checked;
-				};
-
-				var check_mute_inst = new FlxUICheckBox(10, 200, null, null, "Mute Inst in Editor", 100);
-				check_mute_inst.checked = false;
-				check_mute_inst.callback = function()
-				{
-					var vol:Float = 1;
-					if (check_mute_inst.checked)
-						vol = 0;
-					if (FlxG.sound.music != null)
-						FlxG.sound.music.volume = vol;
-				};
-
-				var check_spooky = new FlxUICheckBox(10, 280, null, null, "Is Spooky", 100);
-				check_spooky.checked = _song.isSpooky;
-				check_spooky.callback = function()
-				{
-					_song.isSpooky = check_spooky.checked;
-				};
-
-				var stepperSpeed = new FlxUINumericStepper(10, 80, 0.1, 1, 0.1, 10, 1);
-				stepperSpeed.value = _song.speed;
-				stepperSpeed.name = 'song_speed';
-
-				var stepperBPM = new FlxUINumericStepper(10, 65, 1, 1, 1, 339, 0);
-				stepperBPM.value = Conductor.bpm;
-				stepperBPM.name = 'song_bpm';
-
-				player1TextField = new FlxUIInputText(10, 100, 70, _song.player1, 8);
-				enemyTextField = new FlxUIInputText(80, 100, 70, _song.player2, 8);
-				gfTextField = new FlxUIInputText(10, 120, 70, _song.gf, 8);
-				stageTextField = new FlxUIInputText(80, 120, 70, _song.stage, 8);
-				cutsceneTextField = new FlxUIInputText(80, 140, 70, _song.cutsceneType, 8);
-				uiTextField = new FlxUIInputText(10, 140, 70, _song.uiType, 8);
-				var isMoodyCheck = new FlxUICheckBox(10, 220, null, null, "Is Moody", 100);
-				isMoodyCheck.checked = _song.isMoody;
-				isMoodyCheck.callback = function()
-				{
-					_song.isMoody = isMoodyCheck.checked;
-				};
-				var isHeyCheck = new FlxUICheckBox(10, 250, null, null, "Is Hey", 100);
-				isHeyCheck.checked = _song.isHey;
-				isHeyCheck.callback = function()
-				{
-					_song.isHey = isHeyCheck.checked;
-				};
-				var isCheerCheck = new FlxUICheckBox(100, 250, null, null, "Is Cheer", 100);
-				isCheerCheck.checked = _song.isCheer;
-				isCheerCheck.callback = function()
-				{
-					_song.isCheer = isCheerCheck.checked;
-				};
-				var tab_group_song = new FlxUI(null, ui_box);
-				tab_group_song.name = "Song";
-				tab_group_song.add(songTitle);
-				tab_group_song.add(check_voices);
-				tab_group_song.add(check_mute_inst);
-				tab_group_song.add(isMoodyCheck);
-				tab_group_song.add(isHeyCheck);
-				tab_group_song.add(isCheerCheck);
-				tab_group_song.add(check_spooky);
-				tab_group_song.add(stepperBPM);
-				tab_group_song.add(stepperSpeed);
-
-				ui_box.addGroup(tab_group_song);
-				ui_box.scrollFactor.set();
-				var tab_group_char = new FlxUI(null, ui_box);
-				tab_group_char.name = "Char";
-
-				tab_group_char.add(uiTextField);
-				tab_group_char.add(cutsceneTextField);
-				tab_group_char.add(stageTextField);
-				tab_group_char.add(gfTextField);
-				tab_group_char.add(player1TextField);
-				tab_group_char.add(enemyTextField);
-				ui_box.addGroup(tab_group_char);
-				ui_box.scrollFactor.set();
-
-				var tab_group_section = new FlxUI(null, ui_box);
-				tab_group_section.name = 'Section';
-
-				stepperLength = new FlxUINumericStepper(10, 10, 4, 0, 0, 999, 0);
-				stepperLength.value = 0;
-				stepperLength.name = 'section_length';
-
-				stepperSectionBPM = new FlxUINumericStepper(10, 80, 1, Conductor.bpm, 0, 999, 0);
-				stepperSectionBPM.name = 'section_bpm';
-
-				stepperAltAnim = new FlxUINumericStepper(10, 200, 1, 0, 0, 999, 0);
-				stepperAltAnim.name = 'alt_anim_number';
-
-				// todo, copy thingies
-
-				// todo, clear section
-
-				var swapSection:FlxButton = new FlxButton(10, 170, "Swap Section", function()
-				{
-					var curSection = getSussySectionFromY(strumLine.y);
-					for (i in 0..._song.notes[curSection].sectionNotes.length)
-					{
-						var note = _song.notes[curSection].sectionNotes[i];
-						note[1] = (note[1] + 4) % 8;
-						_song.notes[curSection].sectionNotes[i] = note;
-					}
-					updateNotes();
-				});
-
-				check_mustHitSection = new FlxUICheckBox(10, 30, null, null, "Must hit section", 100);
-				check_mustHitSection.name = 'check_mustHit';
-				check_mustHitSection.checked = true;
-
-				check_changeBPM = new FlxUICheckBox(10, 60, null, null, 'Change BPM', 100);
-				check_changeBPM.name = 'check_changeBPM';
-
-				tab_group_section.add(stepperLength);
-				tab_group_section.add(stepperSectionBPM);
-				tab_group_section.add(check_mustHitSection);
-				tab_group_section.add(stepperAltAnim);
-				tab_group_section.add(check_changeBPM);
-				tab_group_section.add(swapSection);
-
-				ui_box.addGroup(tab_group_section);
-
-				var tab_group_note = new FlxUI(null, ui_box);
-				tab_group_note.name = 'Note';
-
-				stepperAltNote = new FlxUINumericStepper(10, 200, 1, 0, 0, 999, 0);
-				stepperAltNote.value = 0;
-				stepperAltNote.name = 'alt_anim_note';
-
-				isAltNoteCheck = new FlxUICheckBox(10, 100, null, null, "Alt Anim Note", 100);
-				isAltNoteCheck.name = "isAltNote";
-				tab_group_note.add(stepperAltNote);
-				tab_group_note.add(isAltNoteCheck);
-				ui_box.addGroup(tab_group_note);
-			}
-	 */
-	// var isAltNoteCheck:FlxUICheckBox;
-
 	override function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>)
 	{
 		if (strumLine == null)
@@ -1087,6 +931,10 @@ class PlayState extends FlxUIState
 		{
 			if (!noteRelease[i])
 				continue;
+			if (curHoldSelect != null && curHoldSelect[1] == getGoodInfo(i))
+			{
+				curHoldSelect = null;
+			}
 		}
 	}
 
@@ -1102,6 +950,12 @@ class PlayState extends FlxUIState
 		{
 			curSelectedNote[2] = getSussyStrumTime(strumLine.y) - curSelectedNote[0];
 			curSelectedNote[2] = FlxMath.bound(curSelectedNote[2], 0);
+			updateNotes();
+		}
+		if (curHoldSelect != null)
+		{
+			curHoldSelect[2] = getSussyStrumTime(strumLine.y) - curHoldSelect[0];
+			curHoldSelect[2] = FlxMath.bound(curHoldSelect[2], 0);
 			updateNotes();
 		}
 	}
@@ -1269,8 +1123,8 @@ class PlayState extends FlxUIState
 				return;
 			}
 		}
-		_song.notes[curSection].sectionNotes.push([noteStrum, noteData, noteSus, false, curKeyType == Lift]);
-
+		_song.notes[curSection].sectionNotes.push(goodArray);
+		curHoldSelect = goodArray;
 		updateNotes();
 	}
 
@@ -1366,6 +1220,25 @@ class PlayState extends FlxUIState
 				return;
 			}
 		}
+	}
+
+	private function getGoodInfo(noteData:Int)
+	{
+		var curSection = getSussySectionFromY(strumLine.y);
+		if (_song.notes[curSection].mustHitSection)
+		{
+			var sussyInfo = 0;
+			if (noteData > 3)
+			{
+				sussyInfo = noteData % 4;
+			}
+			else
+			{
+				sussyInfo = noteData + 4;
+			}
+			noteData = sussyInfo;
+		}
+		return noteData;
 	}
 
 	private function updateNotes()
