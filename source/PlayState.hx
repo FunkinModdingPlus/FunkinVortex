@@ -391,7 +391,7 @@ class PlayState extends FlxUIState
 		tabviewThingy.findComponent("songspeed", NumberStepper).pos = _song.speed;
 		tabviewThingy.findComponent("songbpm", NumberStepper).onChange = function(_)
 		{
-			tempBpm = Std.int(tabviewThingy.findComponent("songbpm", NumberStepper).pos);
+			tempBpm = tabviewThingy.findComponent("songbpm", NumberStepper).pos;
 			Conductor.mapBPMChanges(_song);
 			Conductor.changeBPM(tempBpm);
 		};
@@ -400,7 +400,7 @@ class PlayState extends FlxUIState
 		{
 			var curSection = getSussySectionFromY(strumLine.y);
 			if (_song.notes[curSection] != null)
-				_song.notes[curSection].bpm = Std.int(tabviewThingy.findComponent("sectionbpm", NumberStepper).pos);
+				_song.notes[curSection].bpm = tabviewThingy.findComponent("sectionbpm", NumberStepper).pos;
 			updateNotes();
 		};
 		tabviewThingy.findComponent("altsection", NumberStepper).onChange = function(_)
@@ -599,9 +599,9 @@ class PlayState extends FlxUIState
 			}
 			else if (wname == 'song_bpm')
 			{
-				tempBpm = Std.int(nums.value);
+				tempBpm = nums.value;
 				Conductor.mapBPMChanges(_song);
-				Conductor.changeBPM(Std.int(nums.value));
+				Conductor.changeBPM(nums.value);
 			}
 			else if (wname == 'note_susLength')
 			{
@@ -610,7 +610,7 @@ class PlayState extends FlxUIState
 			}
 			else if (wname == 'section_bpm')
 			{
-				_song.notes[curSection].bpm = Std.int(nums.value);
+				_song.notes[curSection].bpm = nums.value;
 				updateNotes();
 			}
 			else if (wname == 'alt_anim_number')
@@ -628,7 +628,7 @@ class PlayState extends FlxUIState
 		// FlxG.log.add(id + " WEED " + sender + " WEED " + data + " WEED " + params);
 	}
 
-	var tempBpm:Int = 0;
+	var tempBpm:Float = 0;
 
 	function updateNoteUI():Void
 	{
@@ -1351,7 +1351,7 @@ class PlayState extends FlxUIState
 
 	function sectionStartTime(section:Int):Float
 	{
-		var daBPM:Int = _song.bpm;
+		var daBPM:Float = _song.bpm;
 		var daPos:Float = 0;
 		for (i in 0...section)
 		{
