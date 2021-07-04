@@ -101,13 +101,6 @@ jobs:
         with:
           name: windows32Build
           path: export/32bit/windows/bin
-      - name: Compile HTML5
-        run: haxelib run lime build html5
-      - name: Publish Html5
-        uses: actions/upload-artifact@v2
-        with:
-          name: html5Build
-          path: export/html5/bin
   buildMac:
     runs-on: macos-latest
 

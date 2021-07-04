@@ -63,4 +63,18 @@ class Conductor
 		crochet = ((60 / bpm) * 1000);
 		stepCrochet = crochet / 4;
 	}
+
+	public static function convertMsToStep(ms:Float):Float
+	{
+		// step is 1/16 of section
+		// beat is 4 steps
+		// beat is probably easier to figure out ???
+		var beats:Float = 0;
+		// ok so um... lets think
+		var lengthInMin:Float = ms / 60000;
+
+		beats = lengthInMin * bpm;
+		// i guess : )
+		return beats * 4;
+	}
 }
