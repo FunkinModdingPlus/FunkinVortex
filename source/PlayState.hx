@@ -166,6 +166,7 @@ class PlayState extends FlxUIState
 		defaultLine.kill();
 		generateStrumLine();
 		strumLine.screenCenter(X);
+		strumLine.x -= 250;
 		trace(strumLine);
 		staffLines.screenCenter(X);
 		chart = new FlxSpriteGroup();
@@ -476,7 +477,7 @@ class PlayState extends FlxUIState
 		LINE_SPACING = Std.int(strumLine.height);
 		curSnap = LINE_SPACING * 4;
 		updateNotes();
-		camFollow = new FlxObject(strumLine.getGraphicMidpoint().x, strumLine.getGraphicMidpoint().y);
+		camFollow = new FlxObject(FlxG.width / 2, strumLine.getGraphicMidpoint().y);
 		FlxG.camera.follow(camFollow, LOCKON);
 		staffLines.y += strumLine.height / 2;
 		snaptext = new FlxText(0, FlxG.height, 0, '4ths', 24);
@@ -685,7 +686,7 @@ class PlayState extends FlxUIState
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		camFollow.setPosition(strumLine.x + Note.swagWidth * 2, strumLine.y);
+		camFollow.setPosition(FlxG.width / 2, strumLine.y);
 		noteControls = [
 			FlxG.keys.justPressed.ONE,
 			FlxG.keys.justPressed.TWO,
@@ -969,7 +970,7 @@ class PlayState extends FlxUIState
 
 	private function generateStrumLine()
 	{
-		for (i in -4...4)
+		for (i in 0...8)
 		{
 			var babyArrow = new FlxSprite(strumLine.x, strumLine.y);
 			babyArrow.frames = FlxAtlasFrames.fromSparrow('assets/images/NOTE_assets.png', 'assets/images/NOTE_assets.xml');
@@ -980,13 +981,13 @@ class PlayState extends FlxUIState
 			babyArrow.animation.addByPrefix('red', 'arrowRIGHT');
 			switch (i)
 			{
-				case -4 | 0:
+				case 0 | 4:
 					babyArrow.animation.play("purple");
-				case 1 | -3:
+				case 5 | 1:
 					babyArrow.animation.play("blue");
-				case 2 | -2:
+				case 2 | 6:
 					babyArrow.animation.play("green");
-				case 3 | -1:
+				case 7 | 3:
 					babyArrow.animation.play("red");
 			}
 			babyArrow.antialiasing = true;
@@ -1031,12 +1032,12 @@ class PlayState extends FlxUIState
 					{color: lineColor, thickness: 5});
 				var line = staffLineGroup.recycle(Line);
 				line.color = lineColor;
+
+				line.setGraphicSize(Std.int(strumLine.width), 5);
+				line.updateHitbox();
+				line.x = strumLine.x + 50;
 				line.y = LINE_SPACING * ((i * 16) + o);
 
-				if (o == 0)
-				{
-					sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
-				}
 				lastLineY = LINE_SPACING * ((i * 16) + o);
 			}
 		}
@@ -1377,9 +1378,9 @@ class PlayState extends FlxUIState
 
 class Line extends FlxSprite
 {
-	public function new(?y:Float = 0)
+	public function new(?x:Float = 0, ?y:Float = 0)
 	{
-		super(0, y);
+		super(x, y);
 		makeGraphic(FlxG.width, 5, FlxColor.WHITE);
 	}
 }
