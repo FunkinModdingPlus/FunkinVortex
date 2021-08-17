@@ -81,6 +81,8 @@ class PlayState extends FlxUIState
 
 	var chart:FlxSpriteGroup;
 	var staffLines:FlxSprite;
+	var staffLineGroup:FlxTypedSpriteGroup<Line>;
+	var defaultLine:Line;
 	var strumLine:FlxSpriteGroup;
 	var curRenderedNotes:FlxTypedSpriteGroup<Note>;
 	var curRenderedSus:FlxSpriteGroup;
@@ -158,12 +160,17 @@ class PlayState extends FlxUIState
 			};
 		// make it ridulously big
 		staffLines = new FlxSprite().makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.BLACK);
+		staffLineGroup = new FlxTypedSpriteGroup<Line>();
+		defaultLine = new Line();
+		staffLineGroup.add(defaultLine);
+		defaultLine.kill();
 		generateStrumLine();
 		strumLine.screenCenter(X);
 		trace(strumLine);
 		staffLines.screenCenter(X);
 		chart = new FlxSpriteGroup();
 		chart.add(staffLines);
+		chart.add(staffLineGroup);
 		chart.add(strumLine);
 		chart.add(curRenderedNotes);
 		chart.add(curRenderedSus);
@@ -1009,20 +1016,23 @@ class PlayState extends FlxUIState
 	private function drawChartLines()
 	{
 		// staffLines.makeGraphic(FlxG.width, FlxG.height * _song.notes.length, FlxColor.TRANSPARENT);
+
 		for (i in 0..._song.notes.length)
 		{
 			for (o in 0..._song.notes[i].lengthInSteps)
 			{
-				/*
-					var lineColor:FlxColor = FlxColor.GRAY;
-					if (o == 0)
-					{
-						lineColor = FlxColor.WHITE;
-						sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
-					}
-					FlxSpriteUtil.drawLine(staffLines, FlxG.width * -0.5, LINE_SPACING * ((i * 16) + o), FlxG.width * 1.5, LINE_SPACING * ((i * 16) + o),
-						{color: lineColor, thickness: 5});
-				 */
+				var lineColor:FlxColor = FlxColor.GRAY;
+				if (o == 0)
+				{
+					lineColor = FlxColor.WHITE;
+					sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
+				}
+				FlxSpriteUtil.drawLine(staffLines, FlxG.width * -0.5, LINE_SPACING * ((i * 16) + o), FlxG.width * 1.5, LINE_SPACING * ((i * 16) + o),
+					{color: lineColor, thickness: 5});
+				var line = staffLineGroup.recycle(Line);
+				line.color = lineColor;
+				line.y = LINE_SPACING * ((i * 16) + o);
+
 				if (o == 0)
 				{
 					sectionMarkers.push(LINE_SPACING * ((i * 16) + o));
@@ -1362,5 +1372,14 @@ class PlayState extends FlxUIState
 			daPos += 4 * (1000 * 60 / daBPM);
 		}
 		return daPos;
+	}
+}
+
+class Line extends FlxSprite
+{
+	public function new(?y:Float = 0)
+	{
+		super(0, y);
+		makeGraphic(FlxG.width, 5, FlxColor.WHITE);
 	}
 }

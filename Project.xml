@@ -19,8 +19,6 @@
 	<!--HTML5-specific-->
 	<error if="html5" value="Html5 can't load charts or songs and thus is unsupported."/>
 	<window if="html5" resizable="false" />
-	<haxedef if="electron" name="power-of-two"/>
-	<window if="electron" hardware="true"/>
 	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" />
 
