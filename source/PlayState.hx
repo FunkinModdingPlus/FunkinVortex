@@ -476,6 +476,7 @@ class PlayState extends FlxUIState
 		tabviewThingy.y = 100;
 		LINE_SPACING = Std.int(strumLine.height);
 		curSnap = LINE_SPACING * 4;
+		drawChartLines();
 		updateNotes();
 		camFollow = new FlxObject(FlxG.width / 2, strumLine.getGraphicMidpoint().y);
 		FlxG.camera.follow(camFollow, LOCKON);
@@ -536,6 +537,7 @@ class PlayState extends FlxUIState
 		};
 
 		_song.notes.push(sec);
+		drawChartLines();
 	}
 
 	// can't think of a good name for this; all this do is just set all the songs params to things from the tabmenu
@@ -1254,7 +1256,7 @@ class PlayState extends FlxUIState
 
 	private function updateNotes()
 	{
-		drawChartLines();
+		// drawChartLines();
 		while (curRenderedNotes.members.length > 0)
 		{
 			curRenderedNotes.remove(curRenderedNotes.members[0], true);
