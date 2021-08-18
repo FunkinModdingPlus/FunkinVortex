@@ -84,8 +84,8 @@ class PlayState extends FlxUIState
 	var staffLineGroup:FlxTypedSpriteGroup<Line>;
 	var defaultLine:Line;
 	var strumLine:FlxSpriteGroup;
-	var curRenderedNotes:FlxTypedSpriteGroup<Note>;
-	var curRenderedSus:FlxSpriteGroup;
+	var curRenderedNotes:FlxTypedSpriteGroup<VtxNote>;
+	var curRenderedSus:FlxTypedSpriteGroup<PointerSprite>;
 	var snaptext:FlxText;
 	var curSnap:Float = 0;
 	var curKeyType:Int = Normal;
@@ -134,8 +134,8 @@ class PlayState extends FlxUIState
 	{
 		super.create();
 		strumLine = new FlxSpriteGroup(0, 0);
-		curRenderedNotes = new FlxTypedSpriteGroup<Note>();
-		curRenderedSus = new FlxSpriteGroup();
+		curRenderedNotes = new FlxTypedSpriteGroup<VtxNote>();
+		curRenderedSus = new FlxTypedSpriteGroup<PointerSprite>();
 		if (_song == null)
 			_song = {
 				song: 'Test',
@@ -425,52 +425,6 @@ class PlayState extends FlxUIState
 				curSelectedNote[3] = tabviewThingy.findComponent("altnotestep", NumberStepper).pos;
 			updateNoteUI();
 		};
-		tabviewThingy.findComponent("noteheal", NumberStepper).onChange = function(_)
-		{
-			if (curSelectedNote != null)
-				curSelectedNote[5] = tabviewThingy.findComponent("noteheal", NumberStepper).pos;
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("notehurt", NumberStepper).onChange = function(_)
-		{
-			if (curSelectedNote != null)
-				curSelectedNote[6] = tabviewThingy.findComponent("notehurt", NumberStepper).pos;
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("consistentHealth", CheckBox).onChange = function(e:UIEvent)
-		{
-			if (curSelectedNote != null)
-			{
-				curSelectedNote[7] = tabviewThingy.findComponent("consistentHealth", CheckBox).selected;
-			}
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("notetiming", NumberStepper).onChange = function(_)
-		{
-			if (curSelectedNote != null)
-				curSelectedNote[8] = tabviewThingy.findComponent("notetiming", NumberStepper).pos;
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("consistentHealth", CheckBox).selected = false;
-		tabviewThingy.findComponent("shouldSing", CheckBox).onChange = function(e:UIEvent)
-		{
-			if (curSelectedNote != null)
-			{
-				curSelectedNote[9] = tabviewThingy.findComponent("shouldSing", CheckBox).selected;
-			}
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("ignoreMods", CheckBox).onChange = function(e:UIEvent)
-		{
-			if (curSelectedNote != null)
-			{
-				curSelectedNote[10] = tabviewThingy.findComponent("ignoreMods", CheckBox).selected;
-			}
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("animSuffix", TextField).text = "";
-		tabviewThingy.findComponent("shouldSing", CheckBox).selected = false;
-		tabviewThingy.findComponent("ignoreMods", CheckBox).selected = false;
 
 		tabviewThingy.x = FlxG.width / 2;
 		tabviewThingy.y = 100;
@@ -829,20 +783,7 @@ class PlayState extends FlxUIState
 						{
 							strumLine.y = note.y;
 							var goodSection = getSussySectionFromY(strumLine.y);
-							var noteData = note.noteData;
-							if (_song.notes[goodSection].mustHitSection)
-							{
-								var sussyInfo = 0;
-								if (noteData > 3)
-								{
-									sussyInfo = noteData % 4;
-								}
-								else
-								{
-									sussyInfo = noteData + 4;
-								}
-								noteData = sussyInfo;
-							}
+							var noteData = getGoodInfo(note.noteData);
 							selectNote(noteData);
 							break;
 						}
@@ -960,12 +901,14 @@ class PlayState extends FlxUIState
 		{
 			curSelectedNote[2] = getSussyStrumTime(strumLine.y) - curSelectedNote[0];
 			curSelectedNote[2] = FlxMath.bound(curSelectedNote[2], 0);
-			updateNotes();
 		}
 		if (curHoldSelect != null)
 		{
 			curHoldSelect[2] = getSussyStrumTime(strumLine.y) - curHoldSelect[0];
 			curHoldSelect[2] = FlxMath.bound(curHoldSelect[2], 0);
+		}
+		if (curHoldSelect != null || curSelectedNote != null)
+		{
 			updateNotes();
 		}
 	}
@@ -1259,11 +1202,13 @@ class PlayState extends FlxUIState
 		// drawChartLines();
 		while (curRenderedNotes.members.length > 0)
 		{
-			curRenderedNotes.remove(curRenderedNotes.members[0], true);
+			var kiddie = curRenderedNotes.remove(curRenderedNotes.members[0], true);
+			kiddie.destroy();
 		}
 		while (curRenderedSus.members.length > 0)
 		{
-			curRenderedSus.remove(curRenderedSus.members[0], true);
+			var kiddie = curRenderedSus.remove(curRenderedSus.members[0], true);
+			kiddie.destroy();
 		}
 		for (j in 0..._song.notes.length)
 		{
@@ -1284,8 +1229,11 @@ class PlayState extends FlxUIState
 				var daStrumTime = i[0];
 				var daSus = i[2];
 				var daLift = i[4];
-				var note = new Note(daStrumTime, daNoteInfo, null, false, daLift);
-				note.sustainLength = daSus;
+				if (getSpriteFromInfo(i) != null)
+				{
+					continue;
+				}
+				var note = new VtxNote(daStrumTime, daNoteInfo, daSus, i[3]);
 				note.setGraphicSize(Std.int(strumLine.members[0].width));
 				note.updateHitbox();
 				note.x = strumLine.members[daNoteInfo % 8].x;
@@ -1306,9 +1254,9 @@ class PlayState extends FlxUIState
 				curRenderedNotes.add(note);
 				if (daSus > 0)
 				{
-					var sustainVis:FlxSprite = new FlxSprite(note.x + note.width / 2,
-						note.y + LINE_SPACING).makeGraphic(8, Math.floor(FlxMath.remapToRange(daSus, 0, Conductor.stepCrochet * 16, 0, LINE_SPACING * 16)),
-						FlxColor.BLUE);
+					var sustainVis:PointerSprite = new PointerSprite(note.x + note.width / 2, note.y + LINE_SPACING);
+					sustainVis.makeGraphic(8, Math.floor(FlxMath.remapToRange(daSus, 0, Conductor.stepCrochet * 16, 0, LINE_SPACING * 16)), FlxColor.BLUE);
+					sustainVis.pointsTo = note;
 					curRenderedSus.add(sustainVis);
 				}
 			}
@@ -1336,6 +1284,20 @@ class PlayState extends FlxUIState
 			}
 		}
 		return 0;
+	}
+
+	private function getSpriteFromInfo(info:Array<Dynamic>)
+	{
+		var yPos = getSussyYPos(info[0]);
+		var noteId = info[1];
+		for (note in curRenderedNotes)
+		{
+			if (CoolUtil.nearlyEquals(note.y, yPos, 0.1) && noteId == note.noteData)
+			{
+				return note;
+			}
+		}
+		return null;
 	}
 
 	private function getSussyYPos(strumTime:Float):Float
@@ -1385,4 +1347,9 @@ class Line extends FlxSprite
 		super(x, y);
 		makeGraphic(FlxG.width, 5, FlxColor.WHITE);
 	}
+}
+
+class PointerSprite extends FlxSprite
+{
+	public var pointsTo:VtxNote;
 }

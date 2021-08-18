@@ -31,6 +31,7 @@ enum abstract Direction(Int) from Int to Int
 
 class Note extends FlxSprite
 {
+	public var mustBeUpdated:Bool = false;
 	public var strumTime:Float = 0;
 
 	public var mustPress:Bool = false;
@@ -43,7 +44,7 @@ class Note extends FlxSprite
 	public var oppMode:Bool = false;
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
-	public var modifiedByLua:Bool = false;
+
 	public var funnyMode:Bool = false;
 	public var noteScore:Float = 1;
 	public var altNote:Bool = false;
@@ -83,7 +84,6 @@ class Note extends FlxSprite
 		// uh oh notedata sussy :flushed:
 		if (prevNote == null)
 			prevNote = this;
-
 		this.prevNote = prevNote;
 		isSustainNote = sustainNote;
 		isLiftNote = LiftNote;
