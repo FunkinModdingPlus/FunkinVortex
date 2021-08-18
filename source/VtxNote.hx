@@ -2,12 +2,13 @@ package;
 
 import flixel.FlxSprite;
 import flixel.graphics.FlxGraphic;
+import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.math.FlxMath;
 import flixel.text.FlxText;
 
 abstract Union<T1, T2>(Dynamic) from T1 to T1 from T2 to T2 {}
 
-class VtxNote extends FlxSprite
+class VtxNote extends FlxTypedSpriteGroup<FlxSprite>
 {
 	public var noteData:Int = 0;
 	public var strumTime:Float = 0;
@@ -49,61 +50,56 @@ class VtxNote extends FlxSprite
 		{
 			noteType = "custom";
 		}
+		var coolNote = new FlxSprite();
+		coolNote.loadGraphic('assets/images/arrows-pixels.png', true, 17, 17);
 
-		loadGraphic('assets/images/arrows-pixels.png', true, 17, 17);
-
-		if (noteType == "custom")
-		{
-			var sussyInfo = Math.floor(noteData / (NOTE_AMOUNT * 2)) - 5;
-			if (coolCustomGraphics[sussyInfo] == null)
-				coolCustomGraphics[sussyInfo] = FlxGraphic.fromAssetKey('assets/images/arrows-pixels.png', true);
-			loadGraphic(coolCustomGraphics[sussyInfo], true, 17, 17);
-		}
 		switch (noteType)
 		{
 			case "normal" | "drain" | "custom":
 				switch (noteData % 4)
 				{
-					case 0: animation.add('note', [4]);
-					case 1: animation.add('note', [5]);
-					case 2: animation.add('note', [6]);
-					case 3: animation.add('note', [7]);
+					case 0: coolNote.animation.add('note', [4]);
+					case 1: coolNote.animation.add('note', [5]);
+					case 2: coolNote.animation.add('note', [6]);
+					case 3: coolNote.animation.add('note', [7]);
 				}
 			case "lift":
 				switch (noteData % 4)
 				{
-					case 0: animation.add('note', [8]);
-					case 1: animation.add('note', [9]);
-					case 2: animation.add('note', [10]);
-					case 3: animation.add('note', [11]);
+					case 0: coolNote.animation.add('note', [8]);
+					case 1: coolNote.animation.add('note', [9]);
+					case 2: coolNote.animation.add('note', [10]);
+					case 3: coolNote.animation.add('note', [11]);
 				}
 			case "mine":
-				animation.add('note', [1]);
+				coolNote.animation.add('note', [1]);
 				switch (noteData % 4)
 				{
-					case 0: angle = 270;
-					case 1: angle = 180;
-					case 2: angle = 0;
-					case 3: angle = 90;
+					case 0: coolNote.angle = 270;
+					case 1: coolNote.angle = 180;
+					case 2: coolNote.angle = 0;
+					case 3: coolNote.angle = 90;
 				}
 			case "nuke":
-				animation.add('note', [0]);
+				coolNote.animation.add('note', [0]);
 				switch (noteData % 4)
 				{
-					case 0: angle = 270;
-					case 1: angle = 180;
-					case 2: angle = 0;
-					case 3: angle = 90;
+					case 0: coolNote.angle = 270;
+					case 1: coolNote.angle = 180;
+					case 2: coolNote.angle = 0;
+					case 3: coolNote.angle = 90;
 				}
 		}
-		animation.play('note');
-		setGraphicSize(40);
+		coolNote.animation.play('note');
+		coolNote.antialiasing = false;
+		coolNote.setGraphicSize(40);
+		add(coolNote);
 		if (noteType == "custom")
 		{
 			var sussyInfo = Math.floor(noteData / (NOTE_AMOUNT * 2));
 			sussyInfo -= 4;
 			var text = new FlxText(0, 0, 0, cast sussyInfo, 32);
-			stamp(text, 0, 0);
+			add(text);
 		}
 	}
 }

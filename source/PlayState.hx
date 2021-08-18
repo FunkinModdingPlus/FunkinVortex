@@ -894,9 +894,8 @@ class PlayState extends FlxUIState
 		strumLine.y += change * curSnap;
 		if (change != 0)
 			strumLine.y = Math.round(strumLine.y / curSnap) * curSnap;
-		curSectionTxt.text = 'Section: ' + getSussySectionFromY(strumLine.y);
 		// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
-		updateUI();
+
 		if (curSelectedNote != null)
 		{
 			curSelectedNote[2] = getSussyStrumTime(strumLine.y) - curSelectedNote[0];
@@ -909,7 +908,12 @@ class PlayState extends FlxUIState
 		}
 		if (curHoldSelect != null || curSelectedNote != null)
 		{
+			updateUI(true);
 			updateNotes();
+		}
+		else
+		{
+			updateUI(false);
 		}
 	}
 
@@ -945,10 +949,12 @@ class PlayState extends FlxUIState
 		}
 	}
 
-	private function updateUI()
+	private function updateUI(?notesAlso:Bool = true)
 	{
-		updateNoteUI();
+		if (notesAlso)
+			updateNoteUI();
 		var curSection = getSussySectionFromY(strumLine.y);
+		curSectionTxt.text = 'Section: ' + curSection;
 		if (_song.notes[curSection] != null)
 		{
 			tabviewThingy.findComponent("sectionbpm", NumberStepper).pos = _song.notes[curSection].bpm;
