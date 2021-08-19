@@ -79,6 +79,7 @@ jobs:
           haxelib install flixel-ui
           haxelib install flixel-addons
           haxelib install tjson
+          haxelib install hxcpp-debug-server
           haxelib git haxeui-core https://github.com/haxeui/haxeui-core
           haxelib git haxeui-flixel https://github.com/haxeui/haxeui-flixel
           haxelib list
