@@ -690,34 +690,34 @@ class PlayState extends FlxUIState
 		super.update(elapsed);
 		camFollow.setPosition(FlxG.width / 2, strumLine.y);
 		noteControls = [
-			FlxG.keys.justPressed.ONE,
-			FlxG.keys.justPressed.TWO,
-			FlxG.keys.justPressed.THREE,
-			FlxG.keys.justPressed.FOUR,
-			FlxG.keys.justPressed.FIVE,
-			FlxG.keys.justPressed.SIX,
-			FlxG.keys.justPressed.SEVEN,
-			FlxG.keys.justPressed.EIGHT
+			FlxG.keys.justPressed.A,
+			FlxG.keys.justPressed.S,
+			FlxG.keys.justPressed.W,
+			FlxG.keys.justPressed.D,
+			FlxG.keys.justPressed.LEFT,
+			FlxG.keys.justPressed.DOWN,
+			FlxG.keys.justPressed.UP,
+			FlxG.keys.justPressed.RIGHT
 		];
 		noteRelease = [
-			FlxG.keys.justReleased.ONE,
-			FlxG.keys.justReleased.TWO,
-			FlxG.keys.justReleased.THREE,
-			FlxG.keys.justReleased.FOUR,
-			FlxG.keys.justReleased.FIVE,
-			FlxG.keys.justReleased.SIX,
-			FlxG.keys.justReleased.SEVEN,
-			FlxG.keys.justReleased.EIGHT
+			FlxG.keys.justReleased.A,
+			FlxG.keys.justReleased.S,
+			FlxG.keys.justReleased.W,
+			FlxG.keys.justReleased.D,
+			FlxG.keys.justReleased.LEFT,
+			FlxG.keys.justReleased.DOWN,
+			FlxG.keys.justReleased.UP,
+			FlxG.keys.justReleased.RIGHT
 		];
 		noteHold = [
-			FlxG.keys.pressed.ONE,
-			FlxG.keys.pressed.TWO,
-			FlxG.keys.pressed.THREE,
-			FlxG.keys.pressed.FOUR,
-			FlxG.keys.pressed.FIVE,
-			FlxG.keys.pressed.SIX,
-			FlxG.keys.pressed.SEVEN,
-			FlxG.keys.pressed.EIGHT
+			FlxG.keys.pressed.A,
+			FlxG.keys.pressed.S,
+			FlxG.keys.pressed.W,
+			FlxG.keys.pressed.D,
+			FlxG.keys.pressed.LEFT,
+			FlxG.keys.pressed.DOWN,
+			FlxG.keys.pressed.UP,
+			FlxG.keys.pressed.RIGHT
 		];
 		if (FocusManager.instance.focus == null)
 		{
