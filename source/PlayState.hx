@@ -75,6 +75,8 @@ enum abstract NoteTypes(Int) from Int to Int
 // By default sections come in steps of 16.
 // i should be using tab menu... oh well
 // we don't have to worry about backspaces ^-^
+
+@:allow(SongDataEditor)
 class PlayState extends FlxUIState
 {
 	static var _song:Song.SwagSong;
@@ -89,20 +91,10 @@ class PlayState extends FlxUIState
 	var snaptext:FlxText;
 	var curSnap:Float = 0;
 	var curKeyType:Int = Normal;
-	// var ui_box:FlxUITabMenu;
-	// var haxeUIOpen:Button;
-	// var openButton:FlxButton;
-	// var saveButton:FlxButton;
-	// var exportButton:FlxButton;
-	// var loadVocalsButton:FlxButton;
-	// var loadInstButton:FlxButton;
-	// var sectionTabBtn:FlxButton;
-	// var noteTabBtn:FlxButton;
 	var menuBar:MenuBar;
 	var curSelectedNote:Array<Dynamic>;
 	var curHoldSelect:Array<Dynamic>;
 	var GRID_SIZE = 40;
-	var tabviewThingy:Component;
 	var LINE_SPACING = 40;
 	var camFollow:FlxObject;
 	var lastLineY:Int = 0;
@@ -115,15 +107,10 @@ class PlayState extends FlxUIState
 	var noteHold:Array<Bool> = [false, false, false, false, false, false, false, false];
 	var curSectionTxt:FlxText;
 	var selectBox:FlxSprite;
-	// var player1TextField:FlxUIInputText;
-	// var enemyTextField:FlxUIInputText;
-	// var gfTextField:FlxUIInputText;
-	// var stageTextField:FlxUIInputText;
-	// var cutsceneTextField:FlxUIInputText;
-	// var uiTextField:FlxUIInputText;
 	var toolInfo:FlxText;
 	var musicSound:Sound;
 	var vocals:Sound;
+	var songDataThingie:SongDataEditor;
 
 	static var vocalSound:FlxSound;
 
@@ -188,7 +175,6 @@ class PlayState extends FlxUIState
 		// HEY UM SNIFF IS ACTUALLY LIKE A PROGRAM SILVAGUNNER USES SOOO
 		saveChartMenu.onClick = function(e:MouseEvent)
 		{
-			updateTextParams();
 			var json = {
 				"song": _song,
 				"generatedBy": "FunkinVortexM+"
@@ -235,7 +221,6 @@ class PlayState extends FlxUIState
 		exportMenu.text = "Export to base game";
 		exportMenu.onClick = function(e:MouseEvent)
 		{
-			updateTextParams();
 			var cloneThingie = new Cloner();
 
 			var sussySong:SwagSong = cloneThingie.clone(_song);
@@ -281,199 +266,9 @@ class PlayState extends FlxUIState
 		fileMenu.addComponent(loadInstMenu);
 		fileMenu.addComponent(loadVoiceMenu);
 		menuBar.addComponent(fileMenu);
-		tabviewThingy = ComponentMacros.buildComponent('assets/data/tabmenu.xml');
-		tabviewThingy.findComponent("bfText", TextField).text = _song.player1;
-		tabviewThingy.findComponent("enemyText", TextField).text = _song.player2;
-		tabviewThingy.findComponent("gfText", TextField).text = _song.gf;
-		tabviewThingy.findComponent("stageText", TextField).text = _song.stage;
-		tabviewThingy.findComponent("cutsceneText", TextField).text = _song.cutsceneType;
-		tabviewThingy.findComponent("uiText", TextField).text = _song.uiType;
-		tabviewThingy.findComponent("songTitle", TextField).text = _song.song;
-		tabviewThingy.findComponent("needsVoices", CheckBox).onChange = function(e:UIEvent)
-		{
-			_song.needsVoices = tabviewThingy.findComponent("needsVoices", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("needsVoices", CheckBox).selected = _song.needsVoices;
-		tabviewThingy.findComponent("muteInst", CheckBox).onChange = function(_)
-		{
-			var vol:Float = 1;
-			if (tabviewThingy.findComponent("muteInst", CheckBox).selected)
-				vol = 0;
-			if (FlxG.sound.music != null)
-				FlxG.sound.music.volume = vol;
-		};
-		tabviewThingy.findComponent("isspooky", CheckBox).onChange = function(e:UIEvent)
-		{
-			_song.isSpooky = tabviewThingy.findComponent("isspooky", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("isspooky", CheckBox).selected = _song.isSpooky;
-		tabviewThingy.findComponent("ismoody", CheckBox).onChange = function(e:UIEvent)
-		{
-			_song.isMoody = tabviewThingy.findComponent("ismoody", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("ismoody", CheckBox).selected = _song.isMoody;
-		tabviewThingy.findComponent("ishey", CheckBox).onChange = function(e:UIEvent)
-		{
-			_song.isHey = tabviewThingy.findComponent("ishey", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("ishey", CheckBox).selected = _song.isHey;
-		tabviewThingy.findComponent("ischeer", CheckBox).onChange = function(e:UIEvent)
-		{
-			_song.isCheer = tabviewThingy.findComponent("ischeer", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("ischeer", CheckBox).selected = _song.isCheer;
-		tabviewThingy.findComponent("forceJudgements", CheckBox).onChange = function(e:UIEvent)
-		{
-			_song.forceJudgements = tabviewThingy.findComponent("forceJudgements", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("forceJudgements", CheckBox).selected = _song.forceJudgements;
-		tabviewThingy.findComponent("convertMines", CheckBox).onChange = function(e:UIEvent)
-		{
-			_song.convertMineToNuke = tabviewThingy.findComponent("convertMines", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("convertMines", CheckBox).selected = _song.convertMineToNuke;
-		tabviewThingy.findComponent("swapsection", Button).onClick = function(_)
-		{
-			var curSection = getSussySectionFromY(strumLine.y);
-			if (_song.notes[curSection] == null)
-				return;
-			for (i in 0..._song.notes[curSection].sectionNotes.length)
-			{
-				var note = _song.notes[curSection].sectionNotes[i];
-				note[1] = (note[1] + 4) % 8;
-				_song.notes[curSection].sectionNotes[i] = note;
-			}
-			updateNotes();
-		};
-		tabviewThingy.findComponent("copysection", Button).onClick = function(_)
-		{
-			copySection(Std.int(tabviewThingy.findComponent("copyid", NumberStepper).pos));
-		};
-		tabviewThingy.findComponent("addsection", Button).onClick = function(_)
-		{
-			addSection();
-		};
-		tabviewThingy.findComponent("clearsection", Button).onClick = function(_)
-		{
-			var curSection = getSussySectionFromY(strumLine.y);
-			if (_song.notes[curSection] == null)
-				return;
-			_song.notes[curSection].sectionNotes = [];
-			updateNotes();
-		};
-		tabviewThingy.findComponent("musthitsection", CheckBox).onChange = function(e:UIEvent)
-		{
-			var curSection = getSussySectionFromY(strumLine.y);
-			if (_song.notes[curSection] != null)
-				_song.notes[curSection].mustHitSection = tabviewThingy.findComponent("musthitsection", CheckBox).selected;
-			updateNotes();
-		};
-		tabviewThingy.findComponent("musthitsection", CheckBox).selected = false;
-		tabviewThingy.findComponent("changebpmsection", CheckBox).onChange = function(e:UIEvent)
-		{
-			var curSection = getSussySectionFromY(strumLine.y);
-			if (_song.notes[curSection] != null)
-				_song.notes[curSection].changeBPM = tabviewThingy.findComponent("changebpmsection", CheckBox).selected;
-		};
-		tabviewThingy.findComponent("changebpmsection", CheckBox).selected = false;
-		tabviewThingy.findComponent("altnotecheck", CheckBox).onChange = function(e:UIEvent)
-		{
-			if (curSelectedNote != null)
-			{
-				curSelectedNote[3] = tabviewThingy.findComponent("altnotecheck", CheckBox).selected ? 1 : 0;
-			}
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("altnotecheck", CheckBox).selected = false;
-		tabviewThingy.findComponent("sectionlength", NumberStepper).onChange = function(_)
-		{
-			var curSection = getSussySectionFromY(strumLine.y);
-			if (_song.notes[curSection] != null)
-				_song.notes[curSection].lengthInSteps = Std.int(tabviewThingy.findComponent("sectionlength", NumberStepper).pos);
-			updateNotes();
-		};
-		tabviewThingy.findComponent("songspeed", NumberStepper).onChange = function(_)
-		{
-			_song.speed = tabviewThingy.findComponent("songspeed", NumberStepper).pos;
-		};
-		tabviewThingy.findComponent("songspeed", NumberStepper).pos = _song.speed;
-		tabviewThingy.findComponent("songbpm", NumberStepper).onChange = function(_)
-		{
-			tempBpm = tabviewThingy.findComponent("songbpm", NumberStepper).pos;
-			Conductor.mapBPMChanges(_song);
-			Conductor.changeBPM(tempBpm);
-		};
-		tabviewThingy.findComponent("songbpm", NumberStepper).pos = _song.bpm;
-		tabviewThingy.findComponent("sectionbpm", NumberStepper).onChange = function(_)
-		{
-			var curSection = getSussySectionFromY(strumLine.y);
-			if (_song.notes[curSection] != null)
-				_song.notes[curSection].bpm = tabviewThingy.findComponent("sectionbpm", NumberStepper).pos;
-			updateNotes();
-		};
-		tabviewThingy.findComponent("altsection", NumberStepper).onChange = function(_)
-		{
-			var curSection = getSussySectionFromY(strumLine.y);
-			if (_song.notes[curSection] != null)
-				_song.notes[curSection].altAnimNum = Std.int(tabviewThingy.findComponent("altsection", NumberStepper).pos);
-
-			updateNotes();
-		};
-		tabviewThingy.findComponent("altnotestep", NumberStepper).onChange = function(_)
-		{
-			if (curSelectedNote != null)
-				curSelectedNote[3] = tabviewThingy.findComponent("altnotestep", NumberStepper).pos;
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("noteheal", NumberStepper).onChange = function(_)
-		{
-			if (curSelectedNote != null)
-				curSelectedNote[5] = tabviewThingy.findComponent("noteheal", NumberStepper).pos;
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("notehurt", NumberStepper).onChange = function(_)
-		{
-			if (curSelectedNote != null)
-				curSelectedNote[6] = tabviewThingy.findComponent("notehurt", NumberStepper).pos;
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("consistentHealth", CheckBox).onChange = function(e:UIEvent)
-		{
-			if (curSelectedNote != null)
-			{
-				curSelectedNote[7] = tabviewThingy.findComponent("consistentHealth", CheckBox).selected;
-			}
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("notetiming", NumberStepper).onChange = function(_)
-		{
-			if (curSelectedNote != null)
-				curSelectedNote[8] = tabviewThingy.findComponent("notetiming", NumberStepper).pos;
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("consistentHealth", CheckBox).selected = false;
-		tabviewThingy.findComponent("shouldSing", CheckBox).onChange = function(e:UIEvent)
-		{
-			if (curSelectedNote != null)
-			{
-				curSelectedNote[9] = tabviewThingy.findComponent("shouldSing", CheckBox).selected;
-			}
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("ignoreMods", CheckBox).onChange = function(e:UIEvent)
-		{
-			if (curSelectedNote != null)
-			{
-				curSelectedNote[10] = tabviewThingy.findComponent("ignoreMods", CheckBox).selected;
-			}
-			updateNoteUI();
-		};
-		tabviewThingy.findComponent("animSuffix", TextField).text = "";
-		tabviewThingy.findComponent("shouldSing", CheckBox).selected = false;
-		tabviewThingy.findComponent("ignoreMods", CheckBox).selected = false;
-
-		tabviewThingy.x = FlxG.width / 2;
-		tabviewThingy.y = 100;
+		songDataThingie = new SongDataEditor(this);
+		songDataThingie.x = FlxG.width / 2;
+		songDataThingie.y = 100;
 		LINE_SPACING = Std.int(strumLine.height);
 		curSnap = LINE_SPACING * 4;
 		drawChartLines();
@@ -518,7 +313,7 @@ class PlayState extends FlxUIState
 		// add(loadInstButton);
 		// add(toolInfo);
 		// add(ui_box);
-		add(tabviewThingy);
+		add(songDataThingie);
 		add(selectBox);
 		// add(haxeUIOpen);
 	}
@@ -540,123 +335,7 @@ class PlayState extends FlxUIState
 		drawChartLines();
 	}
 
-	// can't think of a good name for this; all this do is just set all the songs params to things from the tabmenu
-	function updateTextParams()
-	{
-		_song.player1 = tabviewThingy.findComponent("bfText", TextField).text;
-		_song.player2 = tabviewThingy.findComponent("enemyText", TextField).text;
-		_song.gf = tabviewThingy.findComponent("gfText", TextField).text;
-		_song.stage = tabviewThingy.findComponent("stageText", TextField).text;
-		_song.cutsceneType = tabviewThingy.findComponent("cutsceneText", TextField).text;
-		_song.uiType = tabviewThingy.findComponent("uiText", TextField).text;
-		_song.song = tabviewThingy.findComponent("songTitle", TextField).text;
-		if (curSelectedNote != null)
-		{
-			curSelectedNote[11] = tabviewThingy.findComponent("animSuffix", TextField).text;
-		}
-	}
-
-	override function getEvent(id:String, sender:Dynamic, data:Dynamic, ?params:Array<Dynamic>)
-	{
-		if (strumLine == null)
-			return;
-		var curSection = getSussySectionFromY(strumLine.y);
-		if (id == FlxUICheckBox.CLICK_EVENT)
-		{
-			var check:FlxUICheckBox = cast sender;
-			var label = check.getLabel().text;
-			switch (label)
-			{
-				case 'Must hit section':
-					_song.notes[curSection].mustHitSection = check.checked;
-					updateNotes();
-
-				case 'Change BPM':
-					_song.notes[curSection].changeBPM = check.checked;
-					FlxG.log.add('changed bpm shit');
-				case "Alt Animation":
-				// _song.notes[curSection].altAnim = check.checked;
-				case "Is Moody":
-					_song.isMoody = check.checked;
-				case "Is Spooky":
-					_song.isSpooky = check.checked;
-				case "Is Hey":
-					_song.isHey = check.checked;
-				case 'Alt Anim Note':
-					if (curSelectedNote != null)
-					{
-						curSelectedNote[3] = check.checked ? 1 : 0;
-					}
-					updateNoteUI();
-				case 'Is Cheer':
-					_song.isCheer = check.checked;
-			}
-		}
-		else if (id == FlxUINumericStepper.CHANGE_EVENT && (sender is FlxUINumericStepper))
-		{
-			var nums:FlxUINumericStepper = cast sender;
-			var wname = nums.name;
-
-			FlxG.log.add(wname);
-			if (wname == 'section_length')
-			{
-				_song.notes[curSection].lengthInSteps = Std.int(nums.value);
-				updateNotes();
-			}
-			else if (wname == 'song_speed')
-			{
-				_song.speed = nums.value;
-			}
-			else if (wname == 'song_bpm')
-			{
-				tempBpm = nums.value;
-				Conductor.mapBPMChanges(_song);
-				Conductor.changeBPM(nums.value);
-			}
-			else if (wname == 'note_susLength')
-			{
-				curSelectedNote[2] = nums.value;
-				updateNotes();
-			}
-			else if (wname == 'section_bpm')
-			{
-				_song.notes[curSection].bpm = nums.value;
-				updateNotes();
-			}
-			else if (wname == 'alt_anim_number')
-			{
-				_song.notes[curSection].altAnimNum = Std.int(nums.value);
-			}
-			else if (wname == 'alt_anim_note')
-			{
-				if (curSelectedNote != null)
-					curSelectedNote[3] = nums.value;
-				updateNoteUI();
-			}
-		}
-
-		// FlxG.log.add(id + " WEED " + sender + " WEED " + data + " WEED " + params);
-	}
-
 	var tempBpm:Float = 0;
-
-	function updateNoteUI():Void
-	{
-		if (curSelectedNote != null)
-		{
-			// stepperSusLength.value = curSelectedNote[2];
-			// null is falsy
-			tabviewThingy.findComponent("altnotecheck", CheckBox).selected = cast curSelectedNote[3];
-			tabviewThingy.findComponent("altnotestep", NumberStepper).pos = curSelectedNote[3] != null ? curSelectedNote[3] : 0;
-			tabviewThingy.findComponent("noteheal", NumberStepper).pos = curSelectedNote[5] != null ? curSelectedNote[5] : 1;
-			tabviewThingy.findComponent("notehurt", NumberStepper).pos = curSelectedNote[6] != null ? curSelectedNote[6] : 1;
-			tabviewThingy.findComponent("consistentHealth", CheckBox).selected = cast curSelectedNote[7];
-			tabviewThingy.findComponent("notetiming", NumberStepper).pos = curSelectedNote[8] != null ? curSelectedNote[8] : 1;
-			tabviewThingy.findComponent("shouldSing", CheckBox).selected = curSelectedNote[9] != null ? curSelectedNote[9] : true;
-			tabviewThingy.findComponent("ignoreMods", CheckBox).selected = cast curSelectedNote[10];
-			tabviewThingy.findComponent("animSuffix", TextField).text = curSelectedNote[11] != null ? curSelectedNote[11] : "";
-		}
-	}
 
 	private function loadFromFile():Void
 	{
@@ -970,12 +649,12 @@ class PlayState extends FlxUIState
 		if (curHoldSelect != null || curSelectedNote != null)
 		{
 			updateNotes();
-			updateUI(true);
+			// updateUI(true);
 		}
-		else
-		{
-			updateUI(false);
-		}
+		// else
+		// {
+		// updateUI(false);
+		// }
 	}
 
 	private function generateStrumLine()
@@ -1010,20 +689,9 @@ class PlayState extends FlxUIState
 		}
 	}
 
-	private function updateUI(doNotes:Bool = true)
+	public function curSection()
 	{
-		if (doNotes)
-			updateNoteUI();
-		var curSection = getSussySectionFromY(strumLine.y);
-		curSectionTxt.text = 'Section: ' + curSection;
-		if (_song.notes[curSection] != null)
-		{
-			tabviewThingy.findComponent("sectionbpm", NumberStepper).pos = _song.notes[curSection].bpm;
-			tabviewThingy.findComponent("altsection", NumberStepper).pos = _song.notes[curSection].altAnimNum;
-			tabviewThingy.findComponent("musthitsection", CheckBox).selected = _song.notes[curSection].mustHitSection;
-			tabviewThingy.findComponent("changebpmsection", CheckBox).selected = _song.notes[curSection].changeBPM;
-			tabviewThingy.findComponent("sectionlength", NumberStepper).pos = _song.notes[curSection].lengthInSteps;
-		}
+		return getSussySectionFromY(strumLine.y);
 	}
 
 	private function drawChartLines()
@@ -1203,7 +871,6 @@ class PlayState extends FlxUIState
 
 	private function deselectNote():Void
 	{
-		updateTextParams();
 		curSelectedNote = null;
 		// sectionInfo.visible = true;
 		// noteInfo.visible = false;
@@ -1239,7 +906,7 @@ class PlayState extends FlxUIState
 				// noteInfo.visible = true;
 				// noteInfo.updateNote(curSelectedNote);
 				updateNotes();
-				updateNoteUI();
+				// updateNoteUI();
 				return;
 			}
 		}
