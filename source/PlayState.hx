@@ -111,8 +111,9 @@ class PlayState extends FlxUIState
 	var musicSound:Sound;
 	var vocals:Sound;
 	var songDataThingie:SongDataEditor;
-
-	static var vocalSound:FlxSound;
+	var holdSection:Int = -1;
+	var selectedSection:Int = -1;
+	var vocalSound:FlxSound;
 
 	var snapInfo:Snaps = Four;
 	var noteTypeText:FlxText;
@@ -269,6 +270,7 @@ class PlayState extends FlxUIState
 		songDataThingie = new SongDataEditor(this);
 		songDataThingie.x = FlxG.width / 2;
 		songDataThingie.y = 100;
+		songDataThingie.refreshUI(_song);
 		LINE_SPACING = Std.int(strumLine.height);
 		curSnap = LINE_SPACING * 4;
 		drawChartLines();
@@ -359,7 +361,7 @@ class PlayState extends FlxUIState
 			_song.notes[daSec].sectionNotes.push(copiedNote);
 		}
 
-		updateNotes();
+		updateNotes([daSec]);
 	}
 
 	var selecting:Bool = false;
@@ -410,9 +412,9 @@ class PlayState extends FlxUIState
 			}
 			if (FlxG.keys.justPressed.S)
 			{
-				_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection = !_song.notes[getSussySectionFromY(strumLine.y)].mustHitSection;
+				_song.notes[curSection()].mustHitSection = !_song.notes[curSection()].mustHitSection;
 				// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
-				updateNotes();
+				updateNotes([curSection()]);
 			}
 			if (FlxG.keys.justPressed.Q)
 			{
@@ -507,7 +509,7 @@ class PlayState extends FlxUIState
 						if (FlxG.mouse.overlaps(note))
 						{
 							strumLine.y = note.y;
-							var goodSection = getSussySectionFromY(strumLine.y);
+							var goodSection = curSection();
 							var noteData = note.noteData;
 							if (_song.notes[goodSection].mustHitSection)
 							{
@@ -537,7 +539,7 @@ class PlayState extends FlxUIState
 						if (FlxG.mouse.overlaps(note))
 						{
 							strumLine.y = note.y;
-							var goodSection = getSussySectionFromY(strumLine.y);
+							var goodSection = curSection();
 							var noteData = note.noteData;
 							if (_song.notes[goodSection].mustHitSection)
 							{
@@ -594,10 +596,6 @@ class PlayState extends FlxUIState
 				}
 			}
 		}
-		else
-		{
-			trace(FocusManager.instance.focus);
-		}
 
 		for (i in 0...noteControls.length)
 		{
@@ -623,38 +621,36 @@ class PlayState extends FlxUIState
 			if (curHoldSelect != null && curHoldSelect[1] == getGoodInfo(i))
 			{
 				curHoldSelect = null;
+				holdSection = -1;
 			}
 		}
 	}
 
 	private function moveStrumLine(change:Int = 0)
 	{
+		var oldSection = curSection();
 		strumLine.y += change * curSnap;
+
 		if (change != 0)
 			strumLine.y = Math.round(strumLine.y / curSnap) * curSnap;
-
+		var newSection = curSection();
 		// sectionInfo.changeSection(getSussySectionFromY(strumLine.y));
 		if (curSelectedNote != null)
 		{
 			curSelectedNote[2] = getSussyStrumTime(strumLine.y) - curSelectedNote[0];
 			curSelectedNote[2] = FlxMath.bound(curSelectedNote[2], 0);
-			updateNotes();
+			updateNotes([selectedSection]);
 		}
 		if (curHoldSelect != null)
 		{
 			curHoldSelect[2] = getSussyStrumTime(strumLine.y) - curHoldSelect[0];
 			curHoldSelect[2] = FlxMath.bound(curHoldSelect[2], 0);
-			updateNotes();
+			updateNotes([holdSection]);
 		}
-		if (curHoldSelect != null || curSelectedNote != null)
+		if (oldSection != newSection)
 		{
-			updateNotes();
-			// updateUI(true);
+			curSectionTxt.text = 'Section: ' + newSection;
 		}
-		// else
-		// {
-		// updateUI(false);
-		// }
 	}
 
 	private function generateStrumLine()
@@ -689,7 +685,10 @@ class PlayState extends FlxUIState
 		}
 	}
 
-	public function curSection()
+	/** 
+	 * current section : )
+	 */
+	inline public function curSection()
 	{
 		return getSussySectionFromY(strumLine.y);
 	}
@@ -726,6 +725,7 @@ class PlayState extends FlxUIState
 	function convertToRoll(id:Int)
 	{
 		selectNote(id);
+		var sections = [];
 		// nothing fancy, just generate rolls
 		if (curSelectedNote != null)
 		{
@@ -734,6 +734,7 @@ class PlayState extends FlxUIState
 				for (sussy in 0...Math.floor(curSelectedNote[2] / Conductor.stepCrochet))
 				{
 					var goodSection = getSussySectionFromY(getSussyYPos(curSelectedNote[0] + sussy * Conductor.stepCrochet));
+					sections.push(goodSection);
 					var noteData = id;
 					if (_song.notes[goodSection].mustHitSection)
 					{
@@ -760,7 +761,7 @@ class PlayState extends FlxUIState
 			curSelectedNote[2] = 0;
 		}
 		deselectNote();
-		updateNotes();
+		updateNotes(sections);
 	}
 
 	private function addNote(id:Int):Void
@@ -768,7 +769,7 @@ class PlayState extends FlxUIState
 		var noteStrum = getSussyStrumTime(strumLine.members[id].y);
 		var noteData = id;
 		var noteSus = 0;
-		var curSection = getSussySectionFromY(strumLine.members[id].y);
+		var curSection = curSection();
 		if (_song.notes[curSection].mustHitSection)
 		{
 			var sussyInfo = 0;
@@ -810,13 +811,14 @@ class PlayState extends FlxUIState
 				{
 					break;
 				}
-				updateNotes();
+				updateNotes([curSection]);
 				return;
 			}
 		}
 		_song.notes[curSection].sectionNotes.push(goodArray);
 		curHoldSelect = goodArray;
-		updateNotes();
+		holdSection = curSection;
+		updateNotes([curSection]);
 	}
 
 	private function changeSnap(increase:Bool)
@@ -872,6 +874,7 @@ class PlayState extends FlxUIState
 	private function deselectNote():Void
 	{
 		curSelectedNote = null;
+		selectedSection = -1;
 		// sectionInfo.visible = true;
 		// noteInfo.visible = false;
 	}
@@ -881,7 +884,7 @@ class PlayState extends FlxUIState
 		var noteStrum = getSussyStrumTime(strumLine.members[id].y);
 		var noteData = id;
 		var noteSus = 0;
-		var curSection = getSussySectionFromY(strumLine.members[id].y);
+		var curSection = curSection();
 		if (_song.notes[curSection].mustHitSection)
 		{
 			var sussyInfo = 0;
@@ -902,11 +905,13 @@ class PlayState extends FlxUIState
 			if (CoolUtil.truncateFloat(note[0], 1) == CoolUtil.truncateFloat(goodArray[0], 1) && note[1] == noteData)
 			{
 				curSelectedNote = note;
+				selectedSection = curSection;
 				// sectionInfo.visible = false;
 				// noteInfo.visible = true;
 				// noteInfo.updateNote(curSelectedNote);
-				updateNotes();
+				updateNotes([curSection]);
 				// updateNoteUI();
+				songDataThingie.refreshNoteUI(note);
 				return;
 			}
 		}
@@ -914,7 +919,7 @@ class PlayState extends FlxUIState
 
 	private function getGoodInfo(noteData:Int)
 	{
-		var curSection = getSussySectionFromY(strumLine.y);
+		var curSection = curSection();
 		if (_song.notes[curSection].mustHitSection)
 		{
 			var sussyInfo = 0;
@@ -931,19 +936,44 @@ class PlayState extends FlxUIState
 		return noteData;
 	}
 
-	private function updateNotes()
+	private function updateNotes(?sections:Array<Int>)
 	{
 		// drawChartLines();
-		while (curRenderedNotes.members.length > 0)
+		if (sections == null)
 		{
-			curRenderedNotes.remove(curRenderedNotes.members[0], true);
+			sections = CoolUtil.numberArray(_song.notes.length - 1);
 		}
-		while (curRenderedSus.members.length > 0)
+		var badKids:Array<Note> = [];
+		for (note in curRenderedNotes.members)
 		{
-			curRenderedSus.remove(curRenderedSus.members[0], true);
+			if (note != null && sections.contains(getSussySectionFromY(note.y)))
+			{
+				badKids.push(note);
+			}
+		}
+		for (kid in badKids)
+		{
+			curRenderedNotes.remove(kid);
+			kid.destroy();
+		}
+		var badSus:Array<FlxSprite> = [];
+		for (sus in curRenderedSus.members)
+		{
+			if (sus != null && sections.contains(getSussySectionFromY(sus.y - LINE_SPACING)))
+			{
+				badSus.push(sus);
+			}
+		}
+		for (sus in badSus)
+		{
+			curRenderedSus.remove(sus);
+			sus.destroy();
 		}
 		for (j in 0..._song.notes.length)
 		{
+			// skip it if it doesn't need to be done
+			if (!sections.contains(j))
+				continue;
 			var sectionInfo:Array<Dynamic> = _song.notes[j].sectionNotes;
 			// todo,  bpm support
 			/*

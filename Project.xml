@@ -45,7 +45,7 @@
 	<haxelib name="haxeui-core"/>
 	<!-- git https://github.com/haxeui/haxeui-flixel-->
 	<haxelib name="haxeui-flixel"/>
-	<haxelib name="hxcpp-debug-server"/>
+
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
 	<!--Enable the Flixel core recording system-->

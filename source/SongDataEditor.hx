@@ -5,7 +5,7 @@ import haxe.ui.containers.TabView;
 import haxe.ui.events.MouseEvent;
 import haxe.ui.events.UIEvent;
 
-@:build(haxe.ui.ComponentBuilder.build("assets/data/tabmenu.xml"))
+@:build(haxe.ui.macros.ComponentMacros.build("assets/data/tabmenu.xml"))
 class SongDataEditor extends TabView
 {
 	var playstate:PlayState;
@@ -43,7 +43,7 @@ class SongDataEditor extends TabView
 		return goodSong;
 	}
 
-	private function refreshUI(goodSong:SwagSong)
+	public function refreshUI(goodSong:SwagSong)
 	{
 		bfText.text = goodSong.player1;
 		enemyText.text = goodSong.player2;
@@ -64,13 +64,16 @@ class SongDataEditor extends TabView
 		songbpm.pos = goodSong.bpm;
 	}
 
-	function refreshSectionUI(section:Section.SwagSection)
+	public function refreshSectionUI(section:Section.SwagSection)
 	{
 		sectionbpm.pos = section.bpm;
 		altsection.pos = section.altAnimNum;
+		sectionlength.pos = section.lengthInSteps;
+		musthitsection.selected = section.altAnim;
+		changebpmsection.selected = section.changeBPM;
 	}
 
-	private function refreshNoteUI(goodNote:NoteData)
+	public function refreshNoteUI(goodNote:NoteData)
 	{
 		var altNote:Any = goodNote.altNote;
 		if ((altNote is Bool))
@@ -83,33 +86,33 @@ class SongDataEditor extends TabView
 			altnotestep.pos = cast(altNote : Int);
 			altnotecheck.selected = cast(altNote : Int) != 0;
 		}
-		if (goodNote[5] != null)
+		if (goodNote.healMultiplier != null)
 		{
-			noteheal.pos = goodNote[5];
+			noteheal.pos = goodNote.healMultiplier;
 		}
-		if (goodNote[6] != null)
+		if (goodNote.damageMultiplier != null)
 		{
-			notehurt.pos = goodNote[6];
+			notehurt.pos = goodNote.damageMultiplier;
 		}
-		if (goodNote[7] != null)
+		if (goodNote.consistentHealth != null)
 		{
-			consistentHealth.selected = goodNote[7];
+			consistentHealth.selected = goodNote.consistentHealth;
 		}
-		if (goodNote[8] != null)
+		if (goodNote.timingMultiplier != null)
 		{
-			notetiming.pos = goodNote[8];
+			notetiming.pos = goodNote.timingMultiplier;
 		}
-		if (goodNote[9] != null)
+		if (goodNote.shouldBeSung != null)
 		{
-			shouldSing.selected = goodNote[9];
+			shouldSing.selected = goodNote.shouldBeSung;
 		}
-		if (goodNote[10] != null)
+		if (goodNote.ignoreHealthMods != null)
 		{
-			ignoreMods.selected = goodNote[10];
+			ignoreMods.selected = goodNote.ignoreHealthMods;
 		}
-		if (goodNote[11] != null)
+		if (goodNote.animSuffix != null)
 		{
-			animSuffix.text = goodNote[11];
+			animSuffix.text = goodNote.animSuffix;
 		}
 	}
 
@@ -125,7 +128,7 @@ class SongDataEditor extends TabView
 	@:bind(swapsection, MouseEvent.CLICK)
 	function click_swapsection(_)
 	{
-		var curSection = playstate.getSussySectionFromY(playstate.strumLine.y);
+		var curSection = playstate.curSection();
 		if (_song.notes[curSection] == null)
 			return;
 		for (i in 0..._song.notes[curSection].sectionNotes.length)
@@ -134,7 +137,7 @@ class SongDataEditor extends TabView
 			note[1] = (note[1] + 4) % 8;
 			_song.notes[curSection].sectionNotes[i] = note;
 		}
-		playstate.updateNotes();
+		playstate.updateNotes([curSection]);
 	}
 
 	@:bind(copysection, MouseEvent.CLICK)
@@ -156,7 +159,7 @@ class SongDataEditor extends TabView
 		if (_song.notes[curSection] == null)
 			return;
 		_song.notes[curSection].sectionNotes = [];
-		playstate.updateNotes();
+		playstate.updateNotes([curSection]);
 	}
 
 	@:bind(musthitsection, UIEvent.CHANGE)
@@ -165,7 +168,7 @@ class SongDataEditor extends TabView
 		var curSection = playstate.curSection();
 		if (_song.notes[curSection] != null)
 			_song.notes[curSection].mustHitSection = musthitsection.selected;
-		playstate.updateNotes();
+		playstate.updateNotes([curSection]);
 	}
 
 	@:bind(changebpmsection, UIEvent.CHANGE)
@@ -194,7 +197,8 @@ class SongDataEditor extends TabView
 		{
 			_song.notes[curSection].lengthInSteps = Std.int(sectionlength.pos);
 		}
-		playstate.updateNotes();
+		// Change all sections after this
+		playstate.updateNotes(CoolUtil.numberArray(_song.notes.length - 1, curSection));
 	}
 
 	@:bind(songspeed, UIEvent.CHANGE)
@@ -276,6 +280,7 @@ class SongDataEditor extends TabView
 		}
 	}
 
+	@:bind(ignoreMods, UIEvent.CHANGE)
 	function change_ignoreMods(_)
 	{
 		if (_note != null)
