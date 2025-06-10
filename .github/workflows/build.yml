@@ -27,21 +27,20 @@ jobs:
 
       - uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.3.4
+          haxe-version: 4.3.7
       # Runs a set of commands using the runners shell
       - name: Install Haxelib
         run: |
           haxelib setup ~/haxelib
-          haxelib --global install hmm
-          
-          haxelib --global run hmm install
+          haxelib --global install hmm --quiet
+          haxelib --global run hmm install --quiet
           haxelib list
       - name: Create Version Tag
         run: echo "${{github.run_id}}" > VERSION
       - name: Compile
         run: haxelib run lime build linux --app-version="2.0.0-${{ github.run_id}}"
       - name: Publish Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: linuxBuild
           path: 'export/linux/bin' 
@@ -54,13 +53,13 @@ jobs:
 
       - uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.3.4
+          haxe-version: 4.3.7
       # Runs a set of commands using the runners shell
       - name: Install Haxelib
         run: |
           haxelib setup C:/haxelib
-          haxelib --global install hmm
-          haxelib --global run hmm install
+          haxelib --global install hmm --quiet
+          haxelib --global run hmm install --quiet
           haxelib list
         shell: cmd
       - name: Create Version Tag
@@ -70,14 +69,14 @@ jobs:
       
       
       - name: Publish Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: windowsBuild
           path: export/windows/bin
       - name: Compile 32 bit
         run: haxelib run lime build windows -D32bit -32
       - name: Publish 32bit
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: windows32Build
           path: export/32bit/windows/bin
