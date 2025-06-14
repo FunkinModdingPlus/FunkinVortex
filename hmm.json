@@ -1,6 +1,16 @@
 {
   "dependencies": [
     {
+      "name": "lime",
+      "type": "haxelib",
+      "version": "8.2.2"
+    },
+    {
+      "name": "openfl",
+      "type": "haxelib",
+      "version": "9.3.2"
+    },
+    {
       "name": "flixel",
       "type": "haxelib",
       "version": "5.5.0"
@@ -24,14 +34,14 @@
       "name": "haxeui-core",
       "type": "git",
       "dir": null,
-      "ref": "master",
+      "ref": "fb5bae6",
       "url": "https://github.com/haxeui/haxeui-core.git"
     },
     {
       "name": "haxeui-flixel",
       "type": "git",
       "dir": null,
-      "ref": "master",
+      "ref": "576ee63",
       "url": "https://github.com/haxeui/haxeui-flixel.git"
     },
     {
@@ -45,16 +55,6 @@
       "dir": null,
       "ref": "a8c26f1",
       "url": "https://github.com/FunkinCrew/json2object"
-    },
-    {
-      "name": "lime",
-      "type": "haxelib",
-      "version": "8.1.2"
-    },
-    {
-      "name": "openfl",
-      "type": "haxelib",
-      "version": "9.3.2"
     },
     {
       "name": "thx.core",
